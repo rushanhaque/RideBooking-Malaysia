@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Ride Booking — Rider</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0E1216;--ink2:#1B222B;--gray:#5B6470;--gray2:#8A929E;--line:#ECEEF1;--soft:#F4F6F8;--bg:#FFFFFF;
+  --acc:#00B26B;--acc-d:#00935A;--acc-50:#E6F8F0;--acc-100:#C9F0DE;
+  --blue:#2E73E8;--blue-50:#EAF1FE;--amber:#E0A23A;--amber-50:#FBF1E0;--red:#E5533C;--red-50:#FCEDEA;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:Inter,system-ui,sans-serif;background:#D9DCE1;color:var(--ink);display:flex;justify-content:center;line-height:1.45;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit}
+.ic{width:22px;height:22px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto;display:block}
+.spx{font-family:Sora,Inter,sans-serif}
+
+.app{width:430px;max-width:100%;height:100vh;height:100dvh;max-height:932px;background:var(--bg);position:relative;display:flex;flex-direction:column;overflow:hidden}
+@media(min-width:480px){.app{height:912px;margin:auto;border-radius:40px;box-shadow:0 40px 90px -30px rgba(13,20,30,.55)}}
+
+.stage{flex:1;position:relative;min-height:0}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
+.screen.active{display:flex;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden}.scroll::-webkit-scrollbar{width:0}
+.grow{flex:1;min-width:0}.row{display:flex;align-items:center}.between{justify-content:space-between}.col{display:flex;flex-direction:column}
+.muted{color:var(--gray)}.g2{color:var(--gray2)}.cap{letter-spacing:.02em}
+.fw5{font-weight:500}.fw6{font-weight:600}.fw7{font-weight:700}.fw8{font-weight:800}
+.f11{font-size:11px}.f12{font-size:12px}.f13{font-size:13px}.f14{font-size:14px}.f15{font-size:15px}.f16{font-size:16px}.f18{font-size:18px}
+.mt4{margin-top:4px}.mt6{margin-top:6px}.mt8{margin-top:8px}.mt10{margin-top:10px}.mt12{margin-top:12px}.mt14{margin-top:14px}.mt16{margin-top:16px}.mt18{margin-top:18px}.mt20{margin-top:20px}.mt24{margin-top:24px}
+.pad{padding:0 20px}
+
+.hdr{padding:22px 20px 8px;display:flex;align-items:center;gap:12px}
+.back{width:40px;height:40px;border-radius:13px;border:1px solid var(--line);display:grid;place-items:center;flex:0 0 auto;background:#fff;transition:background .15s}
+.back:active{background:var(--soft)}
+.h-title{font-size:19px;font-weight:800;letter-spacing:-.02em;font-family:Sora,sans-serif}
+.h-sub{font-size:12.5px;color:var(--gray);font-weight:500;margin-top:1px}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:9px;height:54px;border-radius:15px;font-size:15.5px;font-weight:700;width:100%;transition:filter .12s,transform .1s,background .15s}
+.btn:active{transform:scale(.985)}
+.btn.pri{background:var(--ink);color:#fff}.btn.pri:active{filter:brightness(1.4)}
+.btn.acc{background:var(--acc);color:#fff}.btn.acc:active{filter:brightness(.96)}
+.btn.out{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.btn.soft{background:var(--soft);color:var(--ink)}
+.btn .ic{width:20px;height:20px;stroke-width:2.2}
+.btn.sm{height:40px;font-size:13px;border-radius:11px;width:auto;padding:0 15px}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:7px 13px;border-radius:30px;background:var(--soft);color:var(--ink)}
+
+/* map */
+.mapwrap{position:absolute;inset:0;overflow:hidden;background:#E8EBE9}
+.mapwrap svg.mapsvg{position:absolute;inset:0;width:100%;height:100%}
+.topfloat{position:absolute;top:18px;left:20px;right:20px;z-index:20;display:flex;align-items:center;gap:12px}
+.fab{width:46px;height:46px;border-radius:14px;background:#fff;box-shadow:0 8px 24px -8px rgba(13,20,30,.35);display:grid;place-items:center;flex:0 0 auto;border:1px solid rgba(0,0,0,.03)}
+.fab.rnd{border-radius:50%}
+.locchip{flex:1;display:flex;align-items:center;gap:9px;height:46px;padding:0 15px;background:#fff;border-radius:14px;box-shadow:0 8px 24px -8px rgba(13,20,30,.3);font-size:13.5px;font-weight:700;overflow:hidden}
+.locchip .dotgreen{width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 4px var(--acc-50);flex:0 0 auto}
+
+.pin{position:absolute;transform:translate(-50%,-100%);z-index:10;display:flex;flex-direction:column;align-items:center}
+.pin .head{padding:5px 10px;border-radius:10px;font-size:11px;font-weight:800;color:#fff;white-space:nowrap;box-shadow:0 6px 16px -6px rgba(0,0,0,.5)}
+.pin .stem{width:2px;height:10px;background:currentColor}
+.pin .dot{width:14px;height:14px;border-radius:50%;border:3px solid #fff}
+.mk-pickup{color:var(--ink)}.mk-pickup .head{background:var(--ink)}.mk-pickup .dot{background:var(--ink)}
+.mk-drop{color:var(--acc-d)}.mk-drop .head{background:var(--acc-d)}.mk-drop .dot{background:var(--acc-d)}
+.carmk{position:absolute;transform:translate(-50%,-50%);z-index:11;width:38px;height:38px;border-radius:12px;background:var(--ink);display:grid;place-items:center;box-shadow:0 8px 20px -6px rgba(0,0,0,.5);color:#fff}
+.carmk .ic{width:21px;height:21px}
+.pulse{position:absolute;transform:translate(-50%,-50%);z-index:9;width:18px;height:18px;border-radius:50%;background:var(--blue);border:3px solid #fff;animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,115,232,.45)}70%{box-shadow:0 0 0 16px rgba(46,115,232,0)}100%{box-shadow:0 0 0 0 rgba(46,115,232,0)}}
+
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:25;background:#fff;border-radius:26px 26px 0 0;box-shadow:0 -18px 50px -28px rgba(13,20,30,.4);max-height:88%;display:flex;flex-direction:column}
+.sheet .grab{width:38px;height:5px;border-radius:5px;background:#E2E5E9;margin:9px auto 2px}
+.sheet .sc{overflow-y:auto;padding:8px 20px 22px}.sheet .sc::-webkit-scrollbar{width:0}
+
+.gobar{display:flex;align-items:center;gap:12px;height:58px;padding:0 18px;background:var(--soft);border-radius:16px;border:1px solid var(--line);cursor:text;transition:border-color .15s,box-shadow .15s}
+.gobar:focus-within{border-color:var(--ink);box-shadow:0 0 0 3px rgba(14,18,22,.08)}
+.gobar .ic{color:var(--ink);flex:0 0 auto}
+.gobar-inp{background:none;border:none;outline:none;font-size:16px;font-weight:700;color:var(--ink);flex:1;min-width:0;padding:0}
+.gobar-inp::placeholder{color:var(--gray2);font-weight:600}
+.gobar-arr{width:34px;height:34px;border-radius:11px;background:var(--ink);color:#fff;display:none;place-items:center;flex:0 0 auto;padding:0;cursor:pointer;transition:transform .1s}
+.gobar-arr:active{transform:scale(.91)}
+.gobar:focus-within .gobar-arr{display:grid}
+
+/* 3 primary action tiles */
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.act{display:flex;flex-direction:column;align-items:center;gap:9px;padding:16px 6px;border-radius:18px;background:#fff;border:1.5px solid var(--line);text-align:center;transition:border-color .15s,transform .1s}
+.act:active{transform:scale(.97)}
+.act .ci{width:46px;height:46px;border-radius:14px;background:var(--ink);color:#fff;display:grid;place-items:center}
+.act.share .ci{background:var(--acc)}
+.act .ci .ic{width:24px;height:22px}
+.act .t{font-size:13.5px;font-weight:800}
+.act .s{font-size:10.5px;color:var(--gray);font-weight:600}
+
+.shorts{display:flex;gap:10px;overflow-x:auto;padding:2px 0}.shorts::-webkit-scrollbar{height:0}
+.short{flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:10px 14px;border-radius:14px;background:#fff;border:1px solid var(--line);font-size:13.5px;font-weight:700}
+.short .ci{width:30px;height:30px;border-radius:9px;background:var(--soft);display:grid;place-items:center;color:var(--ink)}
+.short .ci .ic{width:17px;height:17px}
+
+.place{display:flex;align-items:center;gap:14px;padding:13px 0;width:100%;text-align:left;border-bottom:1px solid var(--line)}
+.place:last-child{border-bottom:none}
+.place .pi{width:42px;height:42px;border-radius:13px;background:var(--soft);display:grid;place-items:center;color:var(--ink);flex:0 0 auto}
+.place .pt{font-size:14.5px;font-weight:700;display:block}.place .pd{font-size:12.5px;color:var(--gray);margin-top:1px;display:block}
+.place .arr{color:var(--gray2);margin-left:auto}
+
+/* from-to with labels */
+.ft{background:#fff;border:1px solid var(--line);border-radius:18px;padding:4px 16px;box-shadow:0 10px 30px -20px rgba(13,20,30,.4)}
+.ft .line{display:flex;align-items:center;gap:13px;min-height:58px;padding:8px 0}
+.ft .line+.line{border-top:1px solid var(--line)}
+.ft .dotw{width:13px;height:13px;border-radius:50%;border:3px solid var(--acc-d);background:var(--acc-50);flex:0 0 auto}
+.ft .dots{width:12px;height:12px;border-radius:3px;background:var(--acc-d);flex:0 0 auto}
+.ft .lbl{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--gray2)}
+.ft input{flex:1;border:none;outline:none;background:none;font-size:15px;font-weight:700;color:var(--ink);padding:0}
+.ft input::placeholder{color:var(--gray2);font-weight:600}
+.ft .chg{font-size:11.5px;font-weight:800;color:var(--acc-d);background:var(--acc-50);padding:5px 10px;border-radius:9px;flex:0 0 auto}
+.ft .swap{width:34px;height:34px;border-radius:10px;background:var(--soft);display:grid;place-items:center;flex:0 0 auto}
+
+/* choose: 3 option cards */
+.opt{display:flex;align-items:center;gap:14px;padding:14px;border-radius:16px;border:2px solid var(--line);background:#fff;width:100%;text-align:left;transition:border-color .15s,background .15s}
+.opt+.opt{margin-top:10px}
+.opt .oi{width:50px;height:50px;border-radius:14px;background:var(--soft);display:grid;place-items:center;color:var(--ink);flex:0 0 auto}
+.opt .oi .ic{width:28px;height:24px}
+.opt .nm{font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px}
+.opt .ds{font-size:12.5px;color:var(--gray);margin-top:3px}
+.opt .pr{margin-left:auto;text-align:right;flex:0 0 auto}
+.opt .pr .p{font-size:17px;font-weight:800;font-family:Sora,sans-serif}
+.opt .pr .old{font-size:11.5px;color:var(--gray2);text-decoration:line-through}
+.opt.sel{border-color:var(--ink);box-shadow:0 12px 28px -18px rgba(13,20,30,.45)}
+.opt.share.sel{border-color:var(--acc)}
+.opt .save{font-size:9px;font-weight:800;background:var(--acc-50);color:var(--acc-d);padding:2px 7px;border-radius:20px;letter-spacing:.02em}
+
+/* trip-option chips */
+.tochips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.toch{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border-radius:12px;background:var(--soft);font-size:12.5px;font-weight:700}
+.toch .ic{width:15px;height:15px;color:var(--acc-d)}
+
+.payrow{display:flex;align-items:center;gap:12px;height:54px;padding:0 14px;border-radius:14px;background:var(--soft)}
+.payrow .pi{width:30px;height:30px;border-radius:8px;background:#fff;display:grid;place-items:center;color:var(--ink);border:1px solid var(--line)}
+.payrow .arr{margin-left:auto;color:var(--gray2)}
+
+/* schedule */
+.daychips{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px}.daychips::-webkit-scrollbar{height:0}
+.day{flex:0 0 auto;min-width:64px;text-align:center;padding:11px 6px;border-radius:14px;border:1.5px solid var(--line);background:#fff}
+.day .d{font-size:11px;color:var(--gray2);font-weight:700}.day .n{font-size:18px;font-weight:800;font-family:Sora;margin-top:2px}
+.day.sel{border-color:var(--ink);background:var(--ink);color:#fff}.day.sel .d{color:rgba(255,255,255,.6)}
+.tchips{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.tch{padding:13px 6px;text-align:center;border-radius:13px;border:1.5px solid var(--line);background:#fff;font-weight:700;font-size:14px}
+.tch.sel{border-color:var(--acc);background:var(--acc-50);color:var(--acc-d)}
+
+.drvcard{display:flex;align-items:center;gap:13px}
+.drvcard .ph{width:54px;height:54px;border-radius:16px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:18px;font-family:Sora,sans-serif;flex:0 0 auto}
+.plate{display:inline-flex;align-items:center;font-size:13px;font-weight:800;letter-spacing:.06em;background:var(--ink);color:#fff;padding:3px 9px;border-radius:7px}
+.circbtn{width:46px;height:46px;border-radius:50%;background:var(--soft);display:grid;place-items:center;flex:0 0 auto}
+.circbtn.acc{background:var(--acc);color:#fff}
+
+.otpwrap{display:flex;gap:9px;justify-content:space-between}
+.otpd{flex:1;height:60px;border:1.5px solid var(--line);border-radius:15px;display:grid;place-items:center;font-size:24px;font-weight:800;font-family:Sora,sans-serif}
+
+.st{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:8px}
+.st .d{width:6px;height:6px;border-radius:50%;background:currentColor}
+.st.ok{background:var(--acc-50);color:var(--acc-d)}.st.go{background:var(--blue-50);color:var(--blue)}
+.st.warn{background:var(--amber-50);color:#946514}.st.red{background:var(--red-50);color:var(--red)}.st.off{background:var(--soft);color:var(--gray)}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}
+.lrow{display:flex;align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.lrow:last-child{border-bottom:none}
+.lrow .li{width:42px;height:42px;border-radius:12px;background:var(--soft);display:grid;place-items:center;color:var(--ink);flex:0 0 auto}
+.lrow .tt{font-size:14.5px;font-weight:700}.lrow .ds{font-size:12.5px;color:var(--gray);margin-top:1px}
+.lrow .arr{margin-left:auto;color:var(--gray2)}
+
+.stars{display:flex;gap:10px;justify-content:center}
+.stars .ic{width:38px;height:38px;color:#DDE1E6;stroke-width:1.6}
+.stars .ic.on{color:var(--amber);fill:var(--amber);stroke:var(--amber)}
+.tip{flex:1;height:44px;border-radius:12px;border:1.5px solid var(--line);font-weight:700;font-size:14px;display:grid;place-items:center}
+.tip.sel{border-color:var(--ink);background:var(--ink);color:#fff}
+
+.bill{display:flex;justify-content:space-between;padding:8px 0;font-size:14px}
+.bill .k{color:var(--gray)}.bill .v{font-weight:700}
+.bill.tot{border-top:1px solid var(--line);margin-top:6px;padding-top:13px}
+
+.payopt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 0;background:none;border:none;cursor:pointer}
+.payopt-ic{width:36px;height:36px;border-radius:11px;background:var(--soft);color:var(--ink);display:grid;place-items:center;flex:0 0 auto}
+.payopt-chk{width:24px;height:24px;border-radius:50%;background:var(--acc);display:grid;place-items:center;flex:0 0 auto;transition:opacity .15s}
+.payopt:not(.sel) .payopt-chk{opacity:0}
+.bill.tot .k{color:var(--ink);font-weight:800;font-size:15px}.bill.tot .v{font-weight:800;font-size:18px;font-family:Sora,sans-serif}
+
+/* search / route screen rows */
+.srch-row{display:flex;align-items:center;gap:13px;padding:13px 16px;width:100%;text-align:left;background:none;border:none;cursor:pointer;transition:background .12s}
+.srch-row:active{background:var(--soft)}
+.srch-ic{width:40px;height:40px;border-radius:12px;background:var(--soft);color:var(--ink);display:grid;place-items:center;flex:0 0 auto}
+.srch-title{font-size:14.5px;font-weight:700;display:block;color:var(--ink)}
+.srch-sub{font-size:12px;color:var(--gray);display:block;margin-top:2px}
+.srch-badge{font-size:10.5px;font-weight:800;padding:4px 9px;border-radius:8px;white-space:nowrap;flex:0 0 auto}
+
+.tabbar{flex:0 0 auto;display:flex;border-top:1px solid var(--line);background:#fff;padding-bottom:env(safe-area-inset-bottom);z-index:30}
+.app.flow .tabbar{display:none}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:11px 0 13px;color:var(--gray2);font-size:10.5px;font-weight:700}
+.tab .ic{width:24px;height:24px}.tab.on{color:var(--ink)}.tab.on .ic{stroke-width:2.3}
+
+.hero{position:absolute;inset:0;background:radial-gradient(120% 80% at 70% 0%,#1A2430 0%,#0E1216 60%);overflow:hidden}
+.hero .glow{position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(0,178,107,.32),transparent 65%);top:-90px;right:-90px}
+.soc{display:flex;align-items:center;justify-content:center;gap:10px;height:52px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:14.5px;font-weight:700;width:100%}
+.divx{display:flex;align-items:center;gap:14px;color:rgba(255,255,255,.45);font-size:12px;font-weight:600;margin:18px 0}
+.divx::before,.divx::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.16)}
+.field{height:54px;border:1.5px solid var(--line);border-radius:14px;display:flex;align-items:center;padding:0 16px;gap:10px;background:#fff}
+.field input,.field select{flex:1;border:none;outline:none;background:none;font-size:15px;font-weight:600;color:var(--ink);min-width:0}
+.field .cc{font-weight:700;color:var(--ink);border-right:1px solid var(--line);padding-right:12px}
+.flbl{font-size:12.5px;font-weight:700;color:var(--gray);margin:0 0 8px 2px}
+
+.toast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:12px 18px;border-radius:12px;opacity:0;transition:.3s;pointer-events:none;z-index:60;white-space:nowrap;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app flow dark" id="app">
+<div class="stage">
+
+<!-- ============ LOGIN ============ -->
+<section class="screen active" data-screen="login" data-flow data-dark>
+  <div class="hero"><div class="glow"></div>
+    <svg style="position:absolute;inset:0;opacity:.5" viewBox="0 0 430 900" preserveAspectRatio="xMidYMid slice"><g stroke="rgba(255,255,255,.06)" stroke-width="1.5" fill="none"><path d="M-20 180 H460 M-20 360 H460 M-20 560 H460 M-20 740 H460"/><path d="M70 -20 V920 M180 -20 V920 M300 -20 V920 M390 -20 V920"/></g><path d="M70 920 L70 560 L300 560 L300 180 L460 180" stroke="rgba(0,178,107,.55)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="70" cy="560" r="7" fill="#fff"/><circle cx="300" cy="180" r="7" fill="#00B26B"/></svg>
+  </div>
+  <div class="scroll" style="position:relative;z-index:2;display:flex;flex-direction:column">
+    <div style="flex:1"></div>
+    <div class="pad" style="padding-bottom:34px;padding-top:30px">
+      <div class="row" style="gap:11px"><span style="width:46px;height:46px;border-radius:14px;background:var(--acc);display:grid;place-items:center"><svg class="ic" style="width:26px;height:26px;color:#fff;stroke-width:2.6"><use href="#bolt"/></svg></span><span class="spx" style="color:#fff;font-weight:800;font-size:18px;letter-spacing:-.02em">Ride Booking</span></div>
+      <div style="margin-top:26px">
+        <div class="spx" style="font-size:38px;font-weight:800;letter-spacing:-.04em;color:#fff;line-height:1.06">Book a ride<br><span style="color:var(--acc)">in seconds.</span></div>
+        <p style="color:rgba(255,255,255,.7);font-size:15px;margin-top:14px;max-width:30ch;line-height:1.5">Book, schedule or share a ride across Malaysia.</p>
+      </div>
+      <div class="flbl" style="color:rgba(255,255,255,.6);margin-top:30px">Mobile number</div>
+      <div class="field" style="background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18)">
+        <span class="cc" style="color:#fff;border-color:rgba(255,255,255,.2)">+60</span>
+        <input type="tel" placeholder="12-345 6789" style="color:#fff" inputmode="numeric">
+      </div>
+      <button class="btn acc" style="margin-top:14px" data-go="otp">Continue<svg class="ic"><use href="#arr"/></svg></button>
+      <div class="divx">or continue with</div>
+      <div class="row" style="gap:12px">
+        <button class="soc" data-go="profile"><svg class="ic" style="width:19px;height:19px"><use href="#google"/></svg>Google</button>
+        <button class="soc" data-go="profile"><svg class="ic" style="width:19px;height:19px;fill:#fff;stroke:none"><use href="#apple"/></svg>Apple</button>
+      </div>
+      <p style="color:rgba(255,255,255,.42);font-size:11.5px;text-align:center;margin-top:24px;line-height:1.6">By continuing you agree to our <span style="color:#fff;font-weight:600">Terms</span> & <span style="color:#fff;font-weight:600">Privacy Policy</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ OTP ============ -->
+<section class="screen" data-screen="otp" data-flow data-dark>
+  <div class="hero"><div class="glow"></div></div>
+  <div class="hdr" style="position:relative;z-index:2"><button class="back" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff" data-go="login"><svg class="ic"><use href="#left"/></svg></button></div>
+  <div class="scroll pad" style="position:relative;z-index:2;padding-top:14px">
+    <div class="spx" style="font-size:28px;font-weight:800;letter-spacing:-.03em;color:#fff">Verify it's you</div>
+    <p style="color:rgba(255,255,255,.7);font-size:14.5px;margin-top:10px">Enter the 6-digit code sent to <span style="color:#fff;font-weight:700">+60 12-345 6789</span></p>
+    <div class="otpwrap" style="margin-top:30px">
+      <div class="otpd" style="color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.06)">8</div>
+      <div class="otpd" style="color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.06)">3</div>
+      <div class="otpd" style="color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.06)">5</div>
+      <div class="otpd" style="color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.06)">1</div>
+      <div class="otpd" style="color:rgba(255,255,255,.3);border-color:rgba(255,255,255,.18)">·</div>
+      <div class="otpd" style="color:rgba(255,255,255,.3);border-color:rgba(255,255,255,.18)">·</div>
+    </div>
+    <button class="btn acc" style="margin-top:30px" data-go="profile">Verify & continue</button>
+    <div style="text-align:center;color:rgba(255,255,255,.55);font-size:13px;margin-top:20px">Resend code in <span style="color:#fff;font-weight:700">0:24</span></div>
+  </div>
+</section>
+
+<!-- ============ PROFILE / INFO ============ -->
+<section class="screen" data-screen="profile" data-flow>
+  <div class="hdr"><button class="back" data-go="login"><svg class="ic"><use href="#left"/></svg></button>
+    <div class="grow"><div class="h-title">Create your profile</div><div class="h-sub">So drivers know who to pick up</div></div>
+  </div>
+  <div class="scroll pad" style="padding-top:8px;padding-bottom:24px">
+    <div class="col" style="align-items:center;margin:8px 0 24px">
+      <div style="width:96px;height:96px;border-radius:50%;background:var(--soft);border:1px solid var(--line);display:grid;place-items:center;position:relative">
+        <svg class="ic" style="width:40px;height:40px;color:var(--gray2)"><use href="#user"/></svg>
+        <span style="position:absolute;right:-2px;bottom:-2px;width:34px;height:34px;border-radius:50%;background:var(--ink);display:grid;place-items:center;border:3px solid #fff"><svg class="ic" style="width:16px;height:16px;color:#fff"><use href="#cam"/></svg></span>
+      </div>
+      <span class="f12 fw7 muted mt10">Add a profile photo</span>
+    </div>
+    <div class="flbl">Full name</div>
+    <div class="field"><svg class="ic" style="width:18px;height:18px;color:var(--gray2)"><use href="#user"/></svg><input value="Nurul Aisyah" placeholder="Your name"></div>
+    <div class="flbl mt16">Email</div>
+    <div class="field"><svg class="ic" style="width:18px;height:18px;color:var(--gray2)"><use href="#mail"/></svg><input value="nurul.aisyah@email.com" placeholder="you@email.com" type="email"></div>
+    <div class="row" style="gap:12px;align-items:flex-start">
+      <div class="grow"><div class="flbl mt16">City</div>
+        <div class="field"><svg class="ic" style="width:18px;height:18px;color:var(--gray2)"><use href="#pin"/></svg><select>
+          <option>Kuala Lumpur</option><option>Petaling Jaya</option><option>Shah Alam</option><option>Subang Jaya</option><option>Johor Bahru</option><option>Penang</option><option>Ipoh</option>
+        </select></div>
+      </div>
+      <div style="width:118px;flex:0 0 auto"><div class="flbl mt16">Age</div>
+        <div class="field"><svg class="ic" style="width:18px;height:18px;color:var(--gray2)"><use href="#user"/></svg><input value="28" placeholder="Age" type="number" inputmode="numeric"></div>
+      </div>
+    </div>
+    <div class="flbl mt16">Referral code <span class="g2 fw5">(optional)</span></div>
+    <div class="field"><svg class="ic" style="width:18px;height:18px;color:var(--gray2)"><use href="#gift"/></svg><input placeholder="Enter code"></div>
+    <div class="card mt20 row" style="gap:11px;background:var(--acc-50);border-color:var(--acc-100)">
+      <svg class="ic" style="width:20px;height:20px;color:var(--acc-d)"><use href="#gift"/></svg>
+      <span class="f13 fw6" style="color:var(--acc-d)">Get RM15 off your first 3 rides when you complete your profile.</span>
+    </div>
+  </div>
+  <div class="pad" style="padding-bottom:24px"><button class="btn pri" data-go="home">Start riding<svg class="ic"><use href="#arr"/></svg></button></div>
+</section>
+
+<!-- ============ HOME ============ -->
+<section class="screen" data-screen="home">
+  <div class="mapwrap" id="map-home"></div>
+  <div class="topfloat">
+    <button class="fab rnd" data-go="account"><span style="width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;font-family:Sora,sans-serif">NA</span></button>
+    <div class="locchip"><span class="dotgreen"></span><span class="grow" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">KLCC, Kuala Lumpur</span><svg class="ic" style="width:16px;height:16px;color:var(--gray2)"><use href="#down"/></svg></div>
+    <button class="fab"><svg class="ic" style="width:21px;height:21px"><use href="#bell"/></svg></button>
+  </div>
+  <div class="sheet" style="max-height:76%">
+    <div class="grab"></div>
+    <div class="sc">
+      <div class="spx" style="font-size:21px;font-weight:800;letter-spacing:-.02em;margin:6px 0 14px">Hi, Nurul</div>
+      <div class="gobar" style="width:100%">
+        <svg class="ic"><use href="#search"/></svg>
+        <input id="home-dest" class="gobar-inp" placeholder="Where to?" autocomplete="off">
+        <button id="home-dest-go" class="gobar-arr" tabindex="-1" aria-label="Search"><svg class="ic" style="width:17px;height:17px;stroke-width:2.4"><use href="#arr"/></svg></button>
+      </div>
+
+      <div class="acts mt16">
+        <button class="act" data-act="now"><span class="ci"><svg class="ic"><use href="#car"/></svg></span><span class="t">Book a ride</span><span class="s">Get a car now</span></button>
+        <button class="act" data-act="schedule"><span class="ci"><svg class="ic"><use href="#cal"/></svg></span><span class="t">Schedule</span><span class="s">Plan ahead</span></button>
+        <button class="act share" data-act="share"><span class="ci"><svg class="ic"><use href="#pool"/></svg></span><span class="t">Share</span><span class="s">Save up to 30%</span></button>
+      </div>
+
+      <div class="row between mt20" style="margin-bottom:10px"><span class="spx f16 fw8">Saved places</span><button class="f13 fw7" style="color:var(--acc-d)" data-go="account">Edit</button></div>
+      <div class="shorts">
+        <button class="short" data-act="now"><span class="ci"><svg class="ic"><use href="#home2"/></svg></span>Home<span class="g2 fw6" style="font-weight:500">· 6.2 km</span></button>
+        <button class="short" data-act="now"><span class="ci"><svg class="ic"><use href="#bag"/></svg></span>Work<span class="g2 fw6" style="font-weight:500">· 11 km</span></button>
+        <button class="short" data-act="now"><span class="ci"><svg class="ic"><use href="#star"/></svg></span>KLIA</button>
+      </div>
+
+      <div class="card mt18" style="padding:0;overflow:hidden;border:none;background:linear-gradient(120deg,#0E1216,#1B2A24)">
+        <div class="row" style="padding:16px 18px;gap:14px">
+          <div class="grow"><div style="color:#fff;font-weight:800;font-size:15.5px;font-family:Sora,sans-serif">Ride Pass · save 15%</div><div style="color:rgba(255,255,255,.65);font-size:12.5px;margin-top:3px">Unlimited ride discounts for RM9.90/mo</div></div>
+          <button class="btn sm" style="background:var(--acc);color:#fff;border:none">Try free</button>
+        </div>
+      </div>
+
+      <div class="row between mt20" style="margin-bottom:4px"><span class="spx f16 fw8">Recent</span><button class="f13 fw7" style="color:var(--acc-d)" data-go="activity">See all</button></div>
+      <button class="place" data-act="now"><span class="pi"><svg class="ic" style="width:20px;height:20px"><use href="#clock"/></svg></span><span class="grow"><span class="pt">Mid Valley Megamall</span><span class="pd">Lingkaran Syed Putra, KL</span></span><svg class="ic arr" style="width:20px;height:20px"><use href="#right"/></svg></button>
+      <button class="place" data-act="now"><span class="pi"><svg class="ic" style="width:20px;height:20px"><use href="#clock"/></svg></span><span class="grow"><span class="pt">KL Sentral</span><span class="pd">Stesen Sentral, Brickfields</span></span><svg class="ic arr" style="width:20px;height:20px"><use href="#right"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SEARCH / LOCATION PICKER ============ -->
+<section class="screen" data-screen="search" data-flow>
+  <!-- sticky header + route card -->
+  <div style="background:#fff;padding:16px 20px 14px;border-bottom:1px solid var(--line)">
+    <div class="row" style="gap:12px;margin-bottom:14px">
+      <button class="back" data-go="home"><svg class="ic"><use href="#left"/></svg></button>
+      <div class="grow"><div class="h-title">Set your route</div></div>
+    </div>
+    <!-- route input card -->
+    <div style="background:var(--soft);border-radius:18px;padding:4px 0;overflow:hidden">
+      <!-- pickup row -->
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0;flex:0 0 auto">
+          <div style="width:11px;height:11px;border-radius:50%;border:2.5px solid var(--acc-d);background:var(--acc-50)"></div>
+        </div>
+        <div class="grow">
+          <div style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gray2);margin-bottom:2px">Pickup</div>
+          <input id="pickin" value="KLCC, Kuala Lumpur" style="background:none;border:none;outline:none;font-size:15px;font-weight:700;color:var(--ink);width:100%;padding:0">
+        </div>
+        <button style="font-size:11.5px;font-weight:800;color:var(--acc-d);background:var(--acc-50);padding:5px 11px;border-radius:9px;border:none;flex:0 0 auto">Current</button>
+      </div>
+      <!-- connector line -->
+      <div style="display:flex;align-items:stretch;gap:12px;padding:0 16px">
+        <div style="width:11px;display:flex;justify-content:center;flex:0 0 auto"><div style="width:2px;background:var(--line);flex:1;margin:0 auto"></div></div>
+        <div style="flex:1;height:1px;background:var(--line);align-self:center"></div>
+      </div>
+      <!-- destination row -->
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px">
+        <div style="flex:0 0 auto"><div style="width:11px;height:11px;border-radius:3px;background:var(--acc-d)"></div></div>
+        <div class="grow">
+          <div style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gray2);margin-bottom:2px">Destination</div>
+          <input id="dropin" placeholder="Where to?" autofocus style="background:none;border:none;outline:none;font-size:15px;font-weight:700;color:var(--ink);width:100%;padding:0">
+        </div>
+        <button class="swap" style="width:32px;height:32px;border-radius:10px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;flex:0 0 auto"><svg class="ic" style="width:16px;height:16px;color:var(--gray)"><use href="#swap"/></svg></button>
+      </div>
+    </div>
+    <!-- quick action pills -->
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="pill" style="font-size:12px;padding:7px 13px"><svg class="ic" style="width:14px;height:14px;color:var(--acc-d)"><use href="#pin"/></svg>Set on map</button>
+      <button class="pill" style="font-size:12px;padding:7px 13px"><svg class="ic" style="width:14px;height:14px"><use href="#people"/></svg>For someone else</button>
+    </div>
+  </div>
+
+  <!-- scrollable suggestions -->
+  <div class="scroll" style="padding:0 20px 24px">
+    <!-- saved places -->
+    <div style="font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--gray2);margin:18px 0 8px">Saved places</div>
+    <div style="background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden">
+      <button class="srch-row" data-go="choose">
+        <span class="srch-ic"><svg class="ic" style="width:19px;height:19px"><use href="#home2"/></svg></span>
+        <span class="grow"><span class="srch-title">Home</span><span class="srch-sub">Pangsapuri Vista, Ampang · 6.2 km</span></span>
+        <svg class="ic" style="width:16px;height:16px;color:var(--gray2)"><use href="#right"/></svg>
+      </button>
+      <div style="height:1px;background:var(--line);margin:0 16px"></div>
+      <button class="srch-row" data-go="choose">
+        <span class="srch-ic"><svg class="ic" style="width:19px;height:19px"><use href="#bag"/></svg></span>
+        <span class="grow"><span class="srch-title">Work</span><span class="srch-sub">Menara TM, Jln Pantai Baharu · 11 km</span></span>
+        <svg class="ic" style="width:16px;height:16px;color:var(--gray2)"><use href="#right"/></svg>
+      </button>
+    </div>
+
+    <!-- recent -->
+    <div style="font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--gray2);margin:20px 0 8px">Recent</div>
+    <div style="background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden">
+      <button class="srch-row" data-go="choose">
+        <span class="srch-ic"><svg class="ic" style="width:19px;height:19px"><use href="#clock"/></svg></span>
+        <span class="grow"><span class="srch-title">Mid Valley Megamall</span><span class="srch-sub">Lingkaran Syed Putra, Kuala Lumpur</span></span>
+        <svg class="ic" style="width:16px;height:16px;color:var(--gray2)"><use href="#right"/></svg>
+      </button>
+      <div style="height:1px;background:var(--line);margin:0 16px"></div>
+      <button class="srch-row" data-go="choose">
+        <span class="srch-ic"><svg class="ic" style="width:19px;height:19px"><use href="#clock"/></svg></span>
+        <span class="grow"><span class="srch-title">Pavilion Bukit Bintang</span><span class="srch-sub">168 Jln Bukit Bintang, KL</span></span>
+        <svg class="ic" style="width:16px;height:16px;color:var(--gray2)"><use href="#right"/></svg>
+      </button>
+      <div style="height:1px;background:var(--line);margin:0 16px"></div>
+      <button class="srch-row" data-go="choose">
+        <span class="srch-ic"><svg class="ic" style="width:19px;height:19px"><use href="#plane"/></svg></span>
+        <span class="grow"><span class="srch-title">KLIA Terminal 1</span><span class="srch-sub">Sepang, Selangor · 55 km</span></span>
+        <svg class="ic" style="width:16px;height:16px;color:var(--gray2)"><use href="#right"/></svg>
+      </button>
+      <div style="height:1px;background:var(--line);margin:0 16px"></div>
+      <button class="srch-row" data-go="choose">
+        <span class="srch-ic"><svg class="ic" style="width:19px;height:19px"><use href="#pin"/></svg></span>
+        <span class="grow"><span class="srch-title">Sunway Pyramid</span><span class="srch-sub">Bandar Sunway, Petaling Jaya</span></span>
+        <svg class="ic" style="width:16px;height:16px;color:var(--gray2)"><use href="#right"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CHOOSE (vehicle class) ============ -->
+<section class="screen" data-screen="choose" data-flow>
+  <div class="mapwrap" id="map-choose"></div>
+  <div class="topfloat"><button class="fab rnd" data-go="search"><svg class="ic"><use href="#left"/></svg></button>
+    <div class="locchip"><svg class="ic" style="width:16px;height:16px;color:var(--acc-d)"><use href="#route"/></svg><span class="grow" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">KLCC → Mid Valley</span><span class="f12 fw8" style="color:var(--gray)">22 min</span></div>
+  </div>
+  <div class="sheet" style="max-height:80%">
+    <div class="grab"></div>
+    <div class="sc">
+      <div class="row between" style="margin:4px 0 10px"><span class="spx f16 fw8">Choose your ride</span><span class="f12 fw7 muted">14.2 km · 22 min</span></div>
+      <!-- selected booking mode (chosen on home) -->
+      <div class="row" style="gap:8px;margin-bottom:14px">
+        <span class="pill" id="mode-pill" style="background:var(--ink);color:#fff"><svg class="ic" style="width:14px;height:14px"><use href="#car" id="mode-pill-ic"/></svg><span id="mode-pill-txt">Book now</span></span>
+        <button class="pill" data-go="home" style="font-size:12px">Change</button>
+      </div>
+      <div data-opts>
+        <button class="opt sel" data-opt data-class="Economy" data-price="RM 13.50" data-share="RM 9.40"><span class="oi"><svg class="ic"><use href="#car"/></svg></span><div class="grow"><div class="nm">Economy</div><div class="ds">Toyota Vios · Perodua Myvi · 3 min away</div></div><div class="pr"><div class="p">RM 13.50</div></div></button>
+        <button class="opt" data-opt data-class="Comfort" data-price="RM 18.00" data-share="RM 12.60"><span class="oi"><svg class="ic"><use href="#car"/></svg></span><div class="grow"><div class="nm">Comfort</div><div class="ds">Honda City · Honda Accord · 4 min away</div></div><div class="pr"><div class="p">RM 18.00</div></div></button>
+        <button class="opt" data-opt data-class="Luxury" data-price="RM 32.00"><span class="oi" style="background:var(--ink);color:#fff"><svg class="ic"><use href="#car"/></svg></span><div class="grow"><div class="nm">Luxury <span class="save" style="background:var(--ink);color:#fff">PREMIUM</span></div><div class="ds">BMW 5 Series · Mercedes E-Class · 6 min away</div></div><div class="pr"><div class="p">RM 32.00</div></div></button>
+      </div>
+      <div class="tochips">
+        <span class="toch"><svg class="ic"><use href="#plus"/></svg>Add stop</span>
+        <span class="toch"><svg class="ic"><use href="#note"/></svg>Note for driver</span>
+        <span class="toch"><svg class="ic"><use href="#people"/></svg>Split fare</span>
+      </div>
+      <div class="payrow mt14"><span class="pi"><svg class="ic" style="width:17px;height:17px"><use href="#wallet"/></svg></span><div class="grow"><span class="f13 fw7">Wallet</span> <span class="f12 muted">· RM 48.20</span></div><span class="f12 fw7" style="color:var(--acc-d)">RIDE15 applied</span><svg class="ic arr" style="width:18px;height:18px"><use href="#down"/></svg></div>
+      <button class="btn pri mt12" id="confirm-ride" data-confirm-ride data-target="finding">Confirm Economy · RM 13.50</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCHEDULE ============ -->
+<section class="screen" data-screen="schedule" data-flow>
+  <div class="hdr"><button class="back" data-go="choose"><svg class="ic"><use href="#left"/></svg></button><div class="grow"><div class="h-title">Schedule your ride</div><div class="h-sub">KLCC → Mid Valley · fixed price</div></div></div>
+  <div class="scroll pad" style="padding-top:8px;padding-bottom:20px">
+    <div class="f12 fw8 g2 cap" style="text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Choose a day</div>
+    <div class="daychips">
+      <button class="day sel" data-day><div class="d">Today</div><div class="n">25</div></button>
+      <button class="day" data-day><div class="d">Thu</div><div class="n">26</div></button>
+      <button class="day" data-day><div class="d">Fri</div><div class="n">27</div></button>
+      <button class="day" data-day><div class="d">Sat</div><div class="n">28</div></button>
+      <button class="day" data-day><div class="d">Sun</div><div class="n">29</div></button>
+    </div>
+    <div class="f12 fw8 g2 cap" style="text-transform:uppercase;letter-spacing:.08em;margin:20px 0 10px">Pickup time</div>
+    <div class="tchips">
+      <button class="tch" data-tslot>7:30 AM</button><button class="tch sel" data-tslot>8:00 AM</button><button class="tch" data-tslot>8:30 AM</button>
+      <button class="tch" data-tslot>9:00 AM</button><button class="tch" data-tslot>5:30 PM</button><button class="tch" data-tslot>6:00 PM</button>
+    </div>
+    <div class="card mt20"><div class="row between"><span class="f13 fw7">Fixed fare</span><span class="spx fw8 f16">RM 13.50</span></div><div class="f12 muted mt6">We'll match a driver ~15 min before pickup and send a reminder.</div></div>
+    <div class="payrow mt14"><span class="pi"><svg class="ic" style="width:17px;height:17px"><use href="#wallet"/></svg></span><div class="grow"><span class="f13 fw7">Wallet</span> <span class="f12 muted">· RM 48.20</span></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></div>
+  </div>
+  <div class="pad" style="padding-bottom:24px"><button class="btn pri" data-go="home" data-confirm data-toast="Ride scheduled for Today, 8:00 AM">Schedule ride · Today 8:00 AM</button></div>
+</section>
+
+<!-- ============ FINDING ============ -->
+<section class="screen" data-screen="finding" data-flow>
+  <div class="mapwrap" id="map-finding"></div>
+  <div class="sheet" style="max-height:54%">
+    <div class="grab"></div>
+    <div class="sc" style="text-align:center;padding-top:20px">
+      <div style="width:84px;height:84px;border-radius:50%;margin:0 auto;display:grid;place-items:center;background:var(--acc-50);position:relative">
+        <span style="position:absolute;inset:0;border-radius:50%;border:3px solid var(--acc);border-top-color:transparent;animation:spin 1s linear infinite"></span>
+        <svg class="ic" style="width:34px;height:34px;color:var(--acc-d)"><use href="#car"/></svg>
+      </div>
+      <div class="spx" style="font-size:19px;font-weight:800;margin-top:18px">Finding your driver…</div>
+      <p class="muted f13 mt6">Matching you with a nearby ride</p>
+      <div class="card mt18" style="text-align:left;display:flex;gap:12px;align-items:center">
+        <span style="width:40px;height:40px;border-radius:11px;background:var(--soft);display:grid;place-items:center"><svg class="ic" style="width:20px;height:20px;color:var(--acc-d)"><use href="#route"/></svg></span>
+        <div class="grow"><div class="f13 fw7">KLCC → Mid Valley Megamall</div><div class="f12 muted mt4">14.2 km · 22 min</div></div>
+        <div class="spx fw8" id="finding-fare">RM 13.50</div>
+      </div>
+      <button class="btn out mt14" data-go="trip" style="border-color:var(--line)">Driver found — view trip</button>
+      <button class="btn soft mt10" data-go="home" style="color:var(--red)">Cancel request</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRIP ============ -->
+<section class="screen" data-screen="trip" data-flow>
+  <div class="mapwrap" id="map-trip"></div>
+  <div class="topfloat"><button class="fab rnd" data-go="home"><svg class="ic"><use href="#left"/></svg></button>
+    <div class="grow"></div>
+    <button class="fab" style="background:var(--red);color:#fff" data-go="safety"><svg class="ic" style="width:20px;height:20px"><use href="#shield"/></svg></button>
+  </div>
+  <div class="sheet" style="max-height:74%">
+    <div class="grab"></div>
+    <div class="sc">
+      <div class="row between" style="margin:2px 0 14px">
+        <div><div class="st go" id="trip-status"><span class="d"></span>Driver is on the way</div><div class="spx" style="font-size:22px;font-weight:800;margin-top:8px" id="trip-eta">Arriving in 4 min</div></div>
+        <div style="text-align:center"><div class="f11 fw8 g2 cap" style="text-transform:uppercase;letter-spacing:.06em">PIN</div><div class="spx" style="font-size:22px;font-weight:800;letter-spacing:.12em;color:var(--acc-d)">4821</div></div>
+      </div>
+      <div class="drvcard card" style="padding:14px">
+        <span class="ph">AR</span>
+        <div class="grow">
+          <div class="row" style="gap:7px"><span class="f15 fw8">Arjun Rao</span><svg class="ic" style="width:15px;height:15px;color:var(--acc-d)"><use href="#verified"/></svg></div>
+          <div class="row mt6" style="gap:8px"><span class="f12 fw7" style="color:var(--amber)">★ 4.92</span><span class="g2 f12">· Perodua Bezza · Silver</span></div>
+        </div>
+        <span class="plate">WXY 8821</span>
+      </div>
+      <div class="row mt12" style="gap:10px">
+        <button class="btn out" style="flex:1;height:48px"><svg class="ic" style="width:19px;height:19px"><use href="#chat"/></svg>Message</button>
+        <button class="circbtn acc"><svg class="ic" style="width:20px;height:20px"><use href="#call"/></svg></button>
+        <button class="circbtn" data-go="safety"><svg class="ic" style="width:20px;height:20px"><use href="#share"/></svg></button>
+      </div>
+      <div class="card mt12" style="padding:14px 16px">
+        <div class="row" style="gap:12px"><span class="dotw" style="border-color:var(--ink);background:none"></span><div class="grow"><div class="f11 fw8 g2 cap" style="text-transform:uppercase;letter-spacing:.05em">Pickup</div><div class="f13 fw6 mt4">KLCC, Jln Ampang</div></div></div>
+        <div style="height:18px;border-left:2px dotted var(--line);margin-left:5px"></div>
+        <div class="row" style="gap:12px"><span class="dots"></span><div class="grow"><div class="f11 fw8 g2 cap" style="text-transform:uppercase;letter-spacing:.05em">Dropoff</div><div class="f13 fw6 mt4">Mid Valley Megamall</div></div><span class="spx fw8 f15">RM 13.50</span></div>
+      </div>
+      <button class="btn soft mt12" data-go="complete">Simulate trip complete →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SAFETY ============ -->
+<section class="screen" data-screen="safety" data-flow>
+  <div class="hdr"><button class="back" data-go="trip"><svg class="ic"><use href="#left"/></svg></button><div class="grow"><div class="h-title">Safety centre</div><div class="h-sub">You're sharing trip WXY 8821</div></div></div>
+  <div class="scroll pad" style="padding-top:6px;padding-bottom:20px">
+    <button class="card" style="width:100%;text-align:left;background:var(--red);border:none;display:flex;gap:14px;align-items:center" data-toast="Calling emergency · 999">
+      <span style="width:50px;height:50px;border-radius:14px;background:rgba(255,255,255,.18);display:grid;place-items:center"><svg class="ic" style="width:26px;height:26px;color:#fff"><use href="#sos"/></svg></span>
+      <div class="grow"><div style="color:#fff;font-weight:800;font-size:16px">Emergency SOS</div><div style="color:rgba(255,255,255,.8);font-size:12.5px;margin-top:3px">Call 999 & alert Ride Booking safety team</div></div>
+      <svg class="ic" style="width:20px;height:20px;color:#fff"><use href="#right"/></svg>
+    </button>
+    <div class="card mt12" style="padding:4px 16px">
+      <button class="lrow" style="width:100%;text-align:left" data-toast="Live trip link shared"><span class="li" style="background:var(--acc-50);color:var(--acc-d)"><svg class="ic" style="width:20px;height:20px"><use href="#share"/></svg></span><div class="grow"><div class="tt">Share live trip</div><div class="ds">Send your route & ETA to a contact</div></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></button>
+      <button class="lrow" style="width:100%;text-align:left"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#people"/></svg></span><div class="grow"><div class="tt">Trusted contacts</div><div class="ds">2 contacts · auto-share night rides</div></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></button>
+      <button class="lrow" style="width:100%;text-align:left"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#verified"/></svg></span><div class="grow"><div class="tt">Verify driver & car</div><div class="ds">Arjun Rao · Perodua Bezza · WXY 8821</div></div><span class="st ok">Matched</span></button>
+    </div>
+    <div class="card mt12 row" style="gap:11px;background:var(--soft);border:none"><svg class="ic" style="width:20px;height:20px;color:var(--gray)"><use href="#shield"/></svg><span class="f12 muted">Your trip is monitored for unusual stops or route changes. We'll check in if something seems off.</span></div>
+  </div>
+  <div class="pad" style="padding-bottom:24px"><button class="btn pri" data-go="trip">Back to trip</button></div>
+</section>
+
+<!-- ============ COMPLETE / RATE ============ -->
+<section class="screen" data-screen="complete" data-flow>
+  <div class="scroll" style="padding-bottom:20px">
+    <div style="background:var(--ink);padding:38px 20px 26px;color:#fff;text-align:center">
+      <div style="width:60px;height:60px;border-radius:50%;background:var(--acc);display:grid;place-items:center;margin:0 auto"><svg class="ic" style="width:30px;height:30px;color:#fff;stroke-width:2.6"><use href="#check"/></svg></div>
+      <div class="spx" style="font-size:24px;font-weight:800;margin-top:16px">You've arrived!</div>
+      <p style="color:rgba(255,255,255,.65);font-size:13.5px;margin-top:6px">Hope you enjoyed your ride to Mid Valley</p>
+    </div>
+    <div class="pad" style="margin-top:-18px">
+      <div class="card">
+        <div class="row" style="gap:13px"><span style="width:48px;height:48px;border-radius:14px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-family:Sora,sans-serif">AR</span>
+          <div class="grow"><div class="f15 fw8">Arjun Rao</div><div class="f12 muted mt4">Perodua Bezza · WXY 8821</div></div>
+          <span class="plate" style="background:var(--soft);color:var(--ink)">★ 4.92</span></div>
+        <div class="f14 fw7" style="text-align:center;margin:18px 0 12px">Rate your trip</div>
+        <div class="stars" data-stars>
+          <svg class="ic on" data-star="1"><use href="#star"/></svg><svg class="ic on" data-star="2"><use href="#star"/></svg><svg class="ic on" data-star="3"><use href="#star"/></svg><svg class="ic on" data-star="4"><use href="#star"/></svg><svg class="ic on" data-star="5"><use href="#star"/></svg>
+        </div>
+        <div class="f13 fw7 mt18" style="margin-bottom:9px">Add a tip</div>
+        <div class="row" style="gap:9px"><button class="tip" data-tip>RM 2</button><button class="tip sel" data-tip>RM 5</button><button class="tip" data-tip>RM 10</button><button class="tip" data-tip>Other</button></div>
+      </div>
+      <div class="card mt12">
+        <div class="row between" style="margin-bottom:6px"><span class="f13 fw8 cap g2" style="text-transform:uppercase;letter-spacing:.06em">Receipt</span><button class="f12 fw8" style="color:var(--acc-d)" data-toast="Split request sent"><span class="row" style="gap:5px"><svg class="ic" style="width:14px;height:14px"><use href="#people"/></svg>Split fare</span></button></div>
+        <div class="bill"><span class="k">Ride fare · 14.2 km</span><span class="v">RM 13.50</span></div>
+        <div class="bill"><span class="k">Promo (RIDE15)</span><span class="v" style="color:var(--acc-d)">– RM 2.00</span></div>
+        <div class="bill"><span class="k">Tip</span><span class="v">RM 5.00</span></div>
+        <div class="bill tot"><span class="k">Paid · Wallet</span><span class="v">RM 16.50</span></div>
+      </div>
+      <div class="card mt12">
+        <div class="f12 fw8 g2 cap" style="text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Pay with</div>
+        <div data-pay-opts>
+          <button class="payopt sel" data-payopt><span class="payopt-ic"><svg class="ic" style="width:18px;height:18px"><use href="#wallet"/></svg></span><div class="grow"><div class="f13 fw7">Wallet</div><div class="f12 muted">Balance: RM 48.20</div></div><span class="payopt-chk"><svg class="ic" style="width:15px;height:15px;stroke:#fff;stroke-width:2.8"><use href="#check"/></svg></span></button>
+          <div style="height:1px;background:var(--line);margin:0 0 0 44px"></div>
+          <button class="payopt" data-payopt><span class="payopt-ic" style="background:#E8F5EC;color:#1A7A44"><svg class="ic" style="width:18px;height:18px"><use href="#phone"/></svg></span><div class="grow"><div class="f13 fw7">TnG eWallet</div><div class="f12 muted">Linked account</div></div><span class="payopt-chk" style="opacity:0"><svg class="ic" style="width:15px;height:15px;stroke-width:2.8"><use href="#check"/></svg></span></button>
+          <div style="height:1px;background:var(--line);margin:0 0 0 44px"></div>
+          <button class="payopt" data-payopt><span class="payopt-ic"><svg class="ic" style="width:18px;height:18px"><use href="#card"/></svg></span><div class="grow"><div class="f13 fw7">Visa ···· 4291</div><div class="f12 muted">Credit card</div></div><span class="payopt-chk" style="opacity:0"><svg class="ic" style="width:15px;height:15px;stroke-width:2.8"><use href="#check"/></svg></span></button>
+        </div>
+      </div>
+      <button class="btn pri mt14" data-go="home" data-confirm data-toast="Thanks for riding with us!">Submit & done</button>
+      <button class="btn soft mt10" data-go="home" data-toast="Receipt emailed">Email receipt</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ACTIVITY ============ -->
+<section class="screen" data-screen="activity">
+  <div class="hdr" style="padding-bottom:6px"><div class="grow"><div class="h-title" style="font-size:24px">Your trips</div></div><button class="fab" style="box-shadow:none;border:1px solid var(--line)"><svg class="ic" style="width:20px;height:20px"><use href="#search"/></svg></button></div>
+  <div class="scroll pad" style="padding-top:8px;padding-bottom:20px">
+    <div class="row" style="gap:8px;margin:6px 0 14px">
+      <button class="btn sm pri" data-seg>All</button><button class="btn sm out" data-seg>Upcoming</button><button class="btn sm out" data-seg>Completed</button>
+    </div>
+    <div class="card" style="border-color:var(--acc-100);background:var(--acc-50)"><div class="row between"><span class="st ok"><span class="d"></span>Scheduled</span><span class="f12 fw7" style="color:var(--acc-d)">Tomorrow · 8:00 AM</span></div>
+      <div class="row mt12" style="gap:13px"><span style="width:44px;height:44px;border-radius:12px;background:#fff;display:grid;place-items:center;color:var(--acc-d);flex:0 0 auto"><svg class="ic" style="width:22px;height:22px"><use href="#cal"/></svg></span>
+        <div class="grow"><div class="f14 fw7">Menara TM, Pantai</div><div class="f12 muted mt4">Booked ride · fixed RM 16.20</div></div></div>
+      <div class="row mt12" style="gap:9px"><button class="btn sm out" style="flex:1;background:#fff">Reschedule</button><button class="btn sm out" style="flex:1;background:#fff;color:var(--red)">Cancel</button></div>
+    </div>
+    <button class="card mt12" style="display:block;width:100%;text-align:left" data-go="complete">
+      <div class="row between"><span class="st go"><span class="d"></span>Ongoing</span><span class="f12 fw7 muted">Today · 6:32 PM</span></div>
+      <div class="row mt12" style="gap:13px"><span style="width:44px;height:44px;border-radius:12px;background:var(--soft);display:grid;place-items:center;color:var(--acc-d);flex:0 0 auto"><svg class="ic" style="width:22px;height:18px"><use href="#pool"/></svg></span>
+        <div class="grow"><div class="f14 fw7">Mid Valley Megamall</div><div class="f12 muted mt4">Share · Arjun Rao</div></div><span class="spx fw8 f15">RM 9.40</span></div>
+    </button>
+    <div class="card mt12"><div class="row between"><span class="st ok"><span class="d"></span>Completed</span><span class="f12 fw7 muted">Yesterday · 9:14 AM</span></div>
+      <div class="row mt12" style="gap:13px"><span style="width:44px;height:44px;border-radius:12px;background:var(--soft);display:grid;place-items:center;flex:0 0 auto"><svg class="ic" style="width:24px;height:18px"><use href="#car"/></svg></span>
+        <div class="grow"><div class="f14 fw7">Menara TM, Pantai</div><div class="f12 muted mt4">Ride · ★ 5.0 given</div></div><span class="spx fw8 f15">RM 16.20</span></div>
+      <button class="btn sm out mt12" style="width:100%">Rebook this trip</button>
+    </div>
+    <div class="card mt12"><div class="row between"><span class="st red"><span class="d"></span>Cancelled</span><span class="f12 fw7 muted">9 Jun · 7:05 PM</span></div>
+      <div class="row mt12" style="gap:13px"><span style="width:44px;height:44px;border-radius:12px;background:var(--soft);display:grid;place-items:center;flex:0 0 auto;color:var(--gray2)"><svg class="ic" style="width:24px;height:18px"><use href="#car"/></svg></span>
+        <div class="grow"><div class="f14 fw7">Sunway Pyramid</div><div class="f12 muted mt4">No driver fee · RM 0</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ACCOUNT ============ -->
+<section class="screen" data-screen="account">
+  <div class="hdr" style="padding-bottom:6px"><div class="grow"><div class="h-title" style="font-size:24px">Account</div></div><button class="fab" style="box-shadow:none;border:1px solid var(--line)"><svg class="ic" style="width:20px;height:20px"><use href="#cog"/></svg></button></div>
+  <div class="scroll pad" style="padding-top:8px;padding-bottom:20px">
+    <div class="card row" style="gap:14px;align-items:center">
+      <span style="width:58px;height:58px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:20px;font-family:Sora,sans-serif">NA</span>
+      <div class="grow"><div class="fw8" style="font-size:17px">Nurul Aisyah</div><div class="row mt4" style="gap:6px"><span class="f12 fw7" style="color:var(--amber)">★ 4.97</span><span class="g2 f12">· +60 12-345 6789</span></div></div>
+      <span class="st ok">Ride Pass</span>
+    </div>
+    <button class="card mt12 row between" data-go="wallet" style="width:100%;text-align:left;background:linear-gradient(120deg,#0E1216,#14322a);border:none">
+      <div class="row" style="gap:13px"><span style="width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.12);display:grid;place-items:center"><svg class="ic" style="width:22px;height:22px;color:#fff"><use href="#wallet"/></svg></span>
+      <div><div style="color:rgba(255,255,255,.6)" class="f12 fw6">Wallet balance</div><div class="spx" style="color:#fff;font-size:20px;font-weight:800;margin-top:2px">RM 48.20</div></div></div>
+      <span class="btn sm" style="background:var(--acc);color:#fff">Top up</span>
+    </button>
+    <div class="card mt12" style="padding:4px 16px">
+      <button class="lrow" data-go="wallet"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#card"/></svg></span><div class="grow"><div class="tt">Payment methods</div><div class="ds">Wallet · TnG eWallet · 1 card</div></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></button>
+      <button class="lrow" data-go="search"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#pin"/></svg></span><div class="grow"><div class="tt">Saved places</div><div class="ds">Home, Work</div></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></button>
+    </div>
+    <div class="card mt12" style="padding:4px 16px">
+      <button class="lrow" data-go="safety"><span class="li" style="color:var(--red)"><svg class="ic" style="width:20px;height:20px"><use href="#shield"/></svg></span><div class="grow"><div class="tt">Safety centre</div><div class="ds">SOS, share trip, trusted contacts</div></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></button>
+      <button class="lrow"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#globe"/></svg></span><div class="grow"><div class="tt">Language</div><div class="ds">English</div></div><span class="f12 fw7 muted" style="margin-left:auto">EN · BM</span></button>
+      <button class="lrow"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#help"/></svg></span><div class="grow"><div class="tt">Help & support</div></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></button>
+      <button class="lrow" data-go="login"><span class="li" style="color:var(--red)"><svg class="ic" style="width:20px;height:20px"><use href="#logout"/></svg></span><div class="grow"><div class="tt" style="color:var(--red)">Log out</div></div></button>
+    </div>
+    <div class="f12 g2" style="text-align:center;margin-top:18px">Ride Booking · v3.2.1</div>
+  </div>
+</section>
+
+<!-- ============ WALLET ============ -->
+<section class="screen" data-screen="wallet" data-flow>
+  <div class="hdr"><button class="back" data-go="account"><svg class="ic"><use href="#left"/></svg></button><div class="grow"><div class="h-title">Wallet</div></div></div>
+  <div class="scroll pad" style="padding-top:8px;padding-bottom:20px">
+    <div class="card" style="background:linear-gradient(120deg,#0E1216,#14322a);border:none;padding:22px">
+      <div class="row between"><span style="color:rgba(255,255,255,.6)" class="f13 fw6">Wallet balance</span><svg class="ic" style="width:22px;height:22px;color:var(--acc)"><use href="#wallet"/></svg></div>
+      <div class="spx" style="color:#fff;font-size:34px;font-weight:800;letter-spacing:-.02em;margin-top:8px">RM 48.20</div>
+      <div class="row mt16" style="gap:10px"><button class="btn acc" style="height:46px" data-toast="Top-up successful">Top up</button><button class="btn" style="height:46px;background:rgba(255,255,255,.12);color:#fff">Send</button></div>
+    </div>
+    <div class="f12 fw8 g2 cap" style="text-transform:uppercase;letter-spacing:.08em;margin:18px 0 4px">Payment methods</div>
+    <div class="card" style="padding:4px 16px">
+      <div class="lrow"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#wallet"/></svg></span><div class="grow"><div class="tt">Wallet</div><div class="ds">RM 48.20</div></div><span class="st ok">Default</span></div>
+      <div class="lrow"><span class="li" style="background:#0064FF;color:#fff;font-size:10px;font-weight:800">TnG</span><div class="grow"><div class="tt">Touch 'n Go eWallet</div><div class="ds">Linked</div></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></div>
+      <div class="lrow"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#card"/></svg></span><div class="grow"><div class="tt">•••• 4291</div><div class="ds">Visa · expires 09/27</div></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></div>
+      <button class="lrow" style="width:100%;text-align:left;color:var(--acc-d)"><span class="li" style="background:var(--acc-50);color:var(--acc-d)"><svg class="ic" style="width:20px;height:20px"><use href="#plus"/></svg></span><div class="grow"><div class="tt" style="color:var(--acc-d)">Add payment method</div></div></button>
+    </div>
+    <div class="f12 fw8 g2 cap" style="text-transform:uppercase;letter-spacing:.08em;margin:18px 0 4px">Recent transactions</div>
+    <div class="card" style="padding:4px 16px">
+      <div class="lrow"><span class="li"><svg class="ic" style="width:20px;height:18px"><use href="#pool"/></svg></span><div class="grow"><div class="tt">Share to Mid Valley</div><div class="ds">Today · 6:32 PM</div></div><span class="fw8 f14" style="color:var(--red)">– RM 9.40</span></div>
+      <div class="lrow"><span class="li" style="color:var(--acc-d)"><svg class="ic" style="width:20px;height:20px"><use href="#plus"/></svg></span><div class="grow"><div class="tt">Wallet top-up</div><div class="ds">Today · FPX Maybank</div></div><span class="fw8 f14" style="color:var(--acc-d)">+ RM 50.00</span></div>
+      <div class="lrow"><span class="li"><svg class="ic" style="width:24px;height:18px"><use href="#car"/></svg></span><div class="grow"><div class="tt">Ride to Menara TM</div><div class="ds">Yesterday · 9:14 AM</div></div><span class="fw8 f14" style="color:var(--red)">– RM 16.20</span></div>
+    </div>
+  </div>
+</section>
+
+</div><!-- stage -->
+<div class="toast" id="toast">Done</div>
+<nav class="tabbar">
+  <button class="tab on" data-go="home"><svg class="ic"><use href="#home"/></svg>Home</button>
+  <button class="tab" data-go="activity"><svg class="ic"><use href="#receipt"/></svg>Trips</button>
+  <button class="tab" data-go="account"><svg class="ic"><use href="#user"/></svg>Account</button>
+</nav>
+</div>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></symbol>
+<symbol id="home" viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5M5 9.5V20h5v-6h4v6h5V9.5"/></symbol>
+<symbol id="home2" viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5M5 9.5V20h5v-6h4v6h5V9.5"/></symbol>
+<symbol id="receipt" viewBox="0 0 24 24"><path d="M5 3h14v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3ZM8.5 8h7M8.5 12h7M8.5 16h4"/></symbol>
+<symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3.3 3-5.5 7-5.5s7 2.2 7 5.5"/></symbol>
+<symbol id="people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c0-2.8 2.7-4.5 6-4.5s6 1.7 6 4.5M16 5.2a3.2 3.2 0 0 1 0 6.3M17.5 14.4c2 .5 3.5 1.8 3.5 4.4"/></symbol>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></symbol>
+<symbol id="bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6M9.5 21a2.5 2.5 0 0 0 5 0"/></symbol>
+<symbol id="pin" viewBox="0 0 24 24"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+<symbol id="down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="arr" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
+<symbol id="star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8L3.5 9.7l5.9-.9z"/></symbol>
+<symbol id="car" viewBox="0 0 32 24"><path d="M3 17v-3.5l2.2-5.2A2 2 0 0 1 7 7h10a2 2 0 0 1 1.8 1.1L21 13.5V17a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M3.5 13.5h17M8 17h0M16 17h0" stroke-width="2.2"/></symbol>
+<symbol id="pool" viewBox="0 0 24 24"><path d="M3 16v-3l1.6-3.8A1.6 1.6 0 0 1 6 8h7a1.6 1.6 0 0 1 1.4.9L16 13v3a.8.8 0 0 1-.8.8H3.8A.8.8 0 0 1 3 16Z"/><path d="M4 13h11" stroke-width="1.8"/><circle cx="18.5" cy="7.5" r="2.2"/><path d="M21.5 16c0-2-1.3-3-3-3"/></symbol>
+<symbol id="bag" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5.5A2.5 2.5 0 0 1 10.5 3h3A2.5 2.5 0 0 1 16 5.5V7"/></symbol>
+<symbol id="plane" viewBox="0 0 24 24"><path d="M21 15.5 14 11V5a2 2 0 0 0-4 0v6l-7 4.5V18l7-2v3l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-3l8 2z" stroke-width="1.4"/></symbol>
+<symbol id="route" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8 6h7a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h7"/></symbol>
+<symbol id="gps" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3.5M12 18.5V22M2 12h3.5M18.5 12H22"/><circle cx="12" cy="12" r="8.5" stroke-dasharray="2 3"/></symbol>
+<symbol id="swap" viewBox="0 0 24 24"><path d="M7 4v16M7 20l-3-3M7 4l3 3M17 20V4M17 4l3 3M17 20l-3-3"/></symbol>
+<symbol id="wallet" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 9h18M16.5 13.5h2"/></symbol>
+<symbol id="card" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 14h3"/></symbol>
+<symbol id="gift" viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 13h16M12 9v11M12 9C10 9 8 8 8 6.5S9.5 4 11 5s1 4 1 4 1-3 2.5-4 2.5 1.5 2.5 1.5S14 9 12 9Z"/></symbol>
+<symbol id="shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 7.7 7 9 4-1.3 7-4.5 7-9V6l-7-3Z"/><path d="M12 8v4M12 15h.01"/></symbol>
+<symbol id="sos" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 7.7 7 9 4-1.3 7-4.5 7-9V6l-7-3Z"/><path d="M12 8v4M12 15.5h.01" stroke-width="2.2"/></symbol>
+<symbol id="help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7M12 17h.01"/></symbol>
+<symbol id="logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 16l5-4-5-4M21 12H9"/></symbol>
+<symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c-2.5 3-4 5.6-4 9s1.5 6 4 9M12 3c2.5 3 4 5.6 4 9s-1.5 6-4 9M3 12h18"/></symbol>
+<symbol id="cog" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M12 1v2M12 21v2M23 12h-2M3 12H1M20.5 3.5l-1.4 1.4M5.9 18.1l-1.4 1.4M20.5 20.5l-1.4-1.4M5.9 5.9l-1.4-1.4M19 12a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></symbol>
+<symbol id="chat" viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L4 20l1-4.3A8.5 8.5 0 1 1 21 11.5Z"/></symbol>
+<symbol id="call" viewBox="0 0 24 24"><path d="M5 4h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5V19a2 2 0 0 1-2 2A16 16 0 0 1 4 6a2 2 0 0 1 1-2Z"/></symbol>
+<symbol id="share" viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8 15.8 7M8.2 13.2l7.6 3.8"/></symbol>
+<symbol id="verified" viewBox="0 0 24 24"><path d="M9.5 3.6a3 3 0 0 1 5 0 3 3 0 0 1 3.5 3.5 3 3 0 0 1 0 5 3 3 0 0 1-3.5 3.5 3 3 0 0 1-5 0A3 3 0 0 1 6 12.1a3 3 0 0 1 0-5 3 3 0 0 1 3.5-3.5Z"/><path d="M9 12l2 2 4-4"/></symbol>
+<symbol id="check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-9"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="note" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></symbol>
+<symbol id="cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="cam" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+<symbol id="mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+<symbol id="google" viewBox="0 0 24 24"><path fill="#fff" stroke="none" d="M21.6 12.2c0-.6-.1-1.3-.2-1.9H12v3.6h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.2Z"/><path fill="#fff" stroke="none" opacity=".9" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 .9-3.4.9-2.6 0-4.8-1.7-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Z"/><path fill="#fff" stroke="none" opacity=".7" d="M6.4 13.9a6 6 0 0 1 0-3.8V7.5H3.1a10 10 0 0 0 0 9z"/><path fill="#fff" stroke="none" opacity=".85" d="M12 6.1c1.5 0 2.8.5 3.8 1.5l2.8-2.8A10 10 0 0 0 3.1 7.5l3.3 2.6C7.2 7.7 9.4 6.1 12 6.1Z"/></symbol>
+<symbol id="apple" viewBox="0 0 24 24"><path d="M12.15 6.9c-.95 0-2.42-1.08-3.96-1.04-2.04.03-3.91 1.18-4.96 3.01-2.12 3.68-.55 9.1 1.52 12.09 1.01 1.46 2.21 3.09 3.79 3.04 1.52-.07 2.09-.99 3.94-.99 1.83 0 2.35.99 3.96.95 1.64-.03 2.68-1.48 3.68-2.95 1.16-1.69 1.64-3.32 1.66-3.41-.04-.01-3.18-1.22-3.22-4.86-.03-3.04 2.48-4.49 2.6-4.56C19.7 7.9 17.5 7.66 16.73 7.61c-2-.16-3.68 1.09-4.58 1.09zM15.53 3.83c.84-1.01 1.4-2.43 1.25-3.83-1.21.05-2.66.81-3.53 1.82-.78.9-1.45 2.34-1.27 3.71 1.34.1 2.71-.69 3.55-1.7"/></symbol>
+</defs></svg>
+
+<script>
+function mapSVG(route){
+  const r = route ? `<path d="M70 690 C70 560 150 540 150 440 C150 340 300 360 300 250 L360 150" stroke="#0E1216" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><path d="M70 690 C70 560 150 540 150 440 C150 340 300 360 300 250 L360 150" stroke="#00B26B" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="2 14"/>` : '';
+  return `<svg class="mapsvg" viewBox="0 0 430 760" preserveAspectRatio="xMidYMid slice"><rect width="430" height="760" fill="#EAEDEA"/><g fill="#DDE3DD"><rect x="-20" y="120" width="180" height="150" rx="8"/><rect x="250" y="60" width="220" height="130" rx="8"/><rect x="20" y="470" width="150" height="170" rx="8"/><rect x="300" y="430" width="170" height="220" rx="8"/><rect x="190" y="300" width="120" height="120" rx="8"/></g><g fill="#CFE6D8"><rect x="180" y="100" width="80" height="80" rx="40"/></g><g stroke="#F4F6F4" stroke-width="14" fill="none" stroke-linecap="round"><path d="M-20 290 H460"/><path d="M-20 450 H460"/><path d="M175 -20 V780"/><path d="M330 -20 V780"/></g><g stroke="#FBFCFB" stroke-width="6" fill="none"><path d="M-20 200 H460"/><path d="M80 -20 V780"/><path d="M260 -20 V780"/></g>${r}</svg>`;
+}
+document.getElementById('map-home').innerHTML=mapSVG(false);
+['map-choose','map-finding','map-trip'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=mapSVG(true);});
+function addMarkers(id,o){const el=document.getElementById(id);if(!el)return;let h='';if(o.pickup)h+=`<div class="pin mk-pickup" style="left:16%;top:91%"><div class="head">Pickup</div><div class="stem"></div><div class="dot"></div></div>`;if(o.drop)h+=`<div class="pin mk-drop" style="left:84%;top:20%"><div class="head">Drop</div><div class="stem"></div><div class="dot"></div></div>`;if(o.car)h+=`<div class="carmk" style="left:35%;top:58%"><svg class="ic"><use href="#car"/></svg></div>`;if(o.me)h+=`<div class="pulse" style="left:16%;top:91%"></div>`;el.insertAdjacentHTML('beforeend',h);}
+addMarkers('map-choose',{pickup:1,drop:1});
+addMarkers('map-finding',{me:1});
+addMarkers('map-trip',{pickup:1,drop:1,car:1});
+
+const app=document.getElementById('app');
+const screens=[...document.querySelectorAll('.screen')];
+function go(id){const sc=screens.find(s=>s.dataset.screen===id);if(!sc)return;screens.forEach(s=>s.classList.toggle('active',s===sc));app.classList.toggle('flow',sc.hasAttribute('data-flow'));app.classList.toggle('dark',sc.hasAttribute('data-dark'));document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.go===id));const sb=sc.querySelector('.scroll,.sc');if(sb)sb.scrollTop=0;}
+let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2200);}
+
+// booking mode chosen on home: now | schedule | share
+let rideMode='now';
+const modeMeta={
+  now:{label:'Book now',icon:'#car'},
+  schedule:{label:'Scheduled ride',icon:'#cal'},
+  share:{label:'Share · save 30%',icon:'#pool'}
+};
+function setMode(mode){
+  rideMode=modeMeta[mode]?mode:'now';
+  const m=modeMeta[rideMode];
+  const txt=document.getElementById('mode-pill-txt');if(txt)txt.textContent=m.label;
+  const ic=document.getElementById('mode-pill-ic');if(ic)ic.setAttribute('href',m.icon);
+  const pill=document.getElementById('mode-pill');if(pill)pill.style.background=rideMode==='share'?'var(--acc)':'var(--ink)';
+  refreshClasses();
+  const sel=document.querySelector('[data-opt].sel')||document.querySelector('[data-opt]');
+  if(sel)applyClass(sel);
+}
+function priceFor(o){return (rideMode==='share'&&o.dataset.share)?o.dataset.share:o.dataset.price;}
+function refreshClasses(){
+  document.querySelectorAll('[data-opt]').forEach(o=>{
+    const pr=o.querySelector('.pr');if(!pr)return;
+    pr.querySelector('.p').textContent=priceFor(o);
+    let old=pr.querySelector('.old');
+    if(rideMode==='share'&&o.dataset.share){
+      if(!old){old=document.createElement('div');old.className='old';pr.appendChild(old);}
+      old.textContent=o.dataset.price;
+    }else if(old){old.remove();}
+  });
+}
+function applyClass(o){
+  const btn=document.getElementById('confirm-ride');if(!btn)return;
+  const price=priceFor(o),cls=o.dataset.class||'ride';
+  const ff=document.getElementById('finding-fare');if(ff)ff.textContent=price;
+  if(rideMode==='schedule'){btn.textContent='Next · choose date & time';btn.dataset.target='schedule';}
+  else{btn.textContent='Confirm '+cls+' · '+price;btn.dataset.target='finding';}
+}
+
+function preloadDest(){const hd=document.getElementById('home-dest');if(hd&&hd.value.trim()){const dr=document.getElementById('dropin');if(dr)dr.value=hd.value.trim();}}
+
+document.getElementById('home-dest')?.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  preloadDest();
+  go('search');
+  e.target.blur();
+});
+
+document.addEventListener('click',e=>{
+  const goArr=e.target.closest('#home-dest-go');if(goArr){preloadDest();go('search');return;}
+  const act=e.target.closest('[data-act]');if(act){preloadDest();setMode(act.dataset.act);go('search');return;}
+  const nav=e.target.closest('[data-go]');if(nav){go(nav.dataset.go);}
+  const opt=e.target.closest('[data-opt]');if(opt){opt.closest('[data-opts]').querySelectorAll('[data-opt]').forEach(o=>o.classList.remove('sel'));opt.classList.add('sel');applyClass(opt);}
+  const cr=e.target.closest('[data-confirm-ride]');if(cr){go(cr.dataset.target||'finding');}
+  const day=e.target.closest('[data-day]');if(day){day.parentElement.querySelectorAll('[data-day]').forEach(d=>d.classList.remove('sel'));day.classList.add('sel');}
+  const ts=e.target.closest('[data-tslot]');if(ts){ts.parentElement.querySelectorAll('[data-tslot]').forEach(t=>t.classList.remove('sel'));ts.classList.add('sel');}
+  const seg=e.target.closest('[data-seg]');if(seg){seg.parentElement.querySelectorAll('[data-seg]').forEach(b=>{b.classList.remove('pri');b.classList.add('out');});seg.classList.remove('out');seg.classList.add('pri');}
+  const star=e.target.closest('[data-star]');if(star){const n=+star.dataset.star;star.closest('[data-stars]').querySelectorAll('[data-star]').forEach(s=>s.classList.toggle('on',+s.dataset.star<=n));}
+  const tip=e.target.closest('[data-tip]');if(tip){tip.parentElement.querySelectorAll('[data-tip]').forEach(t=>t.classList.remove('sel'));tip.classList.add('sel');}
+  const po=e.target.closest('[data-payopt]');if(po){po.closest('[data-pay-opts]').querySelectorAll('[data-payopt]').forEach(p=>{p.classList.remove('sel');p.querySelector('.payopt-chk').style.opacity='0';});po.classList.add('sel');po.querySelector('.payopt-chk').style.opacity='1';}
+  const t=e.target.closest('[data-toast]');if(t){toast(t.dataset.toast);}
+  else if(e.target.closest('[data-confirm]')){toast('Done');}
+});
+
+const tripStatus=document.getElementById('trip-status'),tripEta=document.getElementById('trip-eta');
+let tripStep=0;const tripSteps=[['Driver is on the way','Arriving in 4 min','go'],['Driver is nearby','Arriving in 1 min','go'],['Driver has arrived','Meet at KLCC entrance','ok'],['On trip','12 min to Mid Valley','go']];
+setInterval(()=>{const t=document.querySelector('[data-screen="trip"]');if(!t||!t.classList.contains('active'))return;tripStep=(tripStep+1)%tripSteps.length;const s=tripSteps[tripStep];if(tripStatus){tripStatus.className='st '+s[2];tripStatus.innerHTML='<span class="d"></span>'+s[0];tripEta.textContent=s[1];}},3200);
+</script>
+</body>
+</html>

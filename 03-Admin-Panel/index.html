@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ride Booking · Operations Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0E1216;--ink2:#171D24;--gray:#5B6470;--gray2:#8A929E;--line:#ECEEF1;--bg:#F5F7F8;--surface:#FFFFFF;
+  --acc:#00B26B;--acc-d:#00935A;--acc-50:#E6F8F0;--acc-100:#C9F0DE;
+  --blue:#2E73E8;--blue-50:#EAF1FE;--amber:#E0A23A;--amber-50:#FBF1E0;--red:#E5533C;--red-50:#FCEDEA;--purple:#6B49D8;--purple-50:#F0ECFC;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;-webkit-font-smoothing:antialiased;font-size:14px}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input{font-family:inherit}
+.ic{width:20px;height:20px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto;display:block}
+.spx{font-family:Sora,Inter,sans-serif}
+.muted{color:var(--gray)}.g2{color:var(--gray2)}.grow{flex:1;min-width:0}
+.row{display:flex;align-items:center}.col{display:flex;flex-direction:column}.between{justify-content:space-between}
+.fw6{font-weight:600}.fw7{font-weight:700}.fw8{font-weight:800}
+.f11{font-size:11px}.f12{font-size:12px}.f13{font-size:13px}.f15{font-size:15px}
+.mt6{margin-top:6px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt20{margin-top:20px}.mt24{margin-top:24px}
+
+.admin{display:grid;grid-template-columns:256px 1fr;height:100vh;overflow:hidden}
+
+/* sidebar */
+.sidebar{background:var(--ink);color:#fff;display:flex;flex-direction:column;padding:18px 14px;overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:0}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 16px}
+.brand .m{width:40px;height:40px;border-radius:12px;background:var(--acc);display:grid;place-items:center;flex:0 0 auto}
+.brand .m svg{width:22px;height:22px;color:#fff;stroke-width:2.6}
+.brand .n{font-size:18px;font-weight:800;letter-spacing:-.02em;font-family:Sora,sans-serif}
+.brand .t{font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.navlbl{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.32);padding:16px 10px 7px}
+.nav{display:flex;align-items:center;gap:12px;height:42px;border-radius:11px;padding:0 12px;color:rgba(255,255,255,.66);font-weight:600;font-size:13.5px;width:100%;text-align:left;margin-bottom:2px;transition:background .14s,color .14s}
+.nav:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav.on{background:var(--acc);color:#fff;font-weight:700}
+.nav .ic{width:19px;height:19px}
+.nav .badge{margin-left:auto;background:rgba(255,255,255,.16);color:#fff;font-size:11px;font-weight:800;min-width:20px;height:20px;border-radius:10px;display:grid;place-items:center;padding:0 6px}
+.nav.on .badge{background:rgba(255,255,255,.25)}
+.nav .badge.amber{background:var(--amber);color:#fff}
+.uchip{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:13px;margin-top:20px}
+.uchip .av{width:34px;height:34px;border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px}
+
+/* main */
+.main{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.topbar{height:66px;flex:0 0 66px;display:flex;align-items:center;gap:16px;padding:0 26px;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar .pg{font-size:19px;font-weight:800;letter-spacing:-.02em;font-family:Sora,sans-serif}
+.topbar .cr{font-size:12px;color:var(--gray);font-weight:500;margin-top:1px}
+.searchbar{display:flex;align-items:center;gap:9px;height:42px;width:320px;padding:0 14px;background:var(--bg);border:1px solid var(--line);border-radius:11px}
+.searchbar input{flex:1;border:none;outline:none;background:none;font-size:13px;font-weight:500}
+.searchbar .ic{width:17px;height:17px;color:var(--gray2)}
+.iconbtn{width:42px;height:42px;border-radius:11px;border:1px solid var(--line);display:grid;place-items:center;color:var(--gray);position:relative;background:var(--surface)}
+.iconbtn .dot{position:absolute;top:9px;right:10px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid #fff}
+.content{flex:1;overflow:hidden;padding:24px 26px;display:flex;flex-direction:column}
+
+.view{display:none;flex-direction:column;flex:1;min-height:0}
+.view.active{display:flex;animation:fade .3s ease}
+
+/* fill — panel that should expand to consume remaining height */
+.fill{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.fill .tw{flex:1;overflow-y:auto}
+/* split grids that stretch to fill height */
+.vgrid{display:grid;gap:16px;flex:1;min-height:0;align-items:stretch}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 16px;border-radius:11px;font-size:13px;font-weight:700;background:var(--surface);border:1px solid var(--line);color:var(--ink);transition:.14s}
+.btn:hover{background:var(--bg)}
+.btn.pri{background:var(--acc);color:#fff;border:none}.btn.pri:hover{filter:brightness(.96)}
+.btn.dark{background:var(--ink);color:#fff;border:none}.btn.dark:hover{filter:brightness(1.4)}
+.btn.sm{height:34px;padding:0 12px;font-size:12px;border-radius:9px}
+.btn.danger{color:var(--red);border-color:var(--red-50)}
+.btn .ic{width:16px;height:16px;stroke-width:2.2}
+
+.grid{display:grid;gap:16px}.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2c{grid-template-columns:1fr 1fr}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.kpi .top{display:flex;justify-content:space-between;align-items:center}
+.kpi .ci{width:40px;height:40px;border-radius:12px;background:var(--acc-50);color:var(--acc-d);display:grid;place-items:center}
+.kpi .ci .ic{width:20px;height:20px}
+.kpi .v{font-size:27px;font-weight:800;letter-spacing:-.025em;margin-top:14px;font-family:Sora,sans-serif}
+.kpi .l{font-size:12.5px;color:var(--gray);margin-top:2px}
+.delta{font-size:12px;font-weight:800;padding:3px 9px;border-radius:8px}
+.delta.up{background:var(--acc-50);color:var(--acc-d)}.delta.down{background:var(--red-50);color:var(--red)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px}
+.panel.p0{padding:0;overflow:hidden}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.ph h3{font-size:15.5px;font-weight:800;letter-spacing:-.01em;font-family:Sora,sans-serif}
+.ph .s{font-size:12px;color:var(--gray);margin-top:2px}
+
+.bars{display:flex;align-items:flex-end;gap:14px;height:180px}
+.bars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:9px;height:100%}
+.bars .b i{width:100%;max-width:36px;border-radius:8px 8px 5px 5px;background:var(--acc-100);display:block;transition:height .4s}
+.bars .b.on i{background:var(--acc)}.bars .b span{font-size:11.5px;color:var(--gray2);font-weight:700}
+
+.brk{display:flex;flex-direction:column;gap:15px}
+.brk .it .row{justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:8px}
+.brk .track{height:9px;border-radius:6px;background:var(--bg)}
+.brk .track i{display:block;height:100%;border-radius:6px;background:var(--acc)}
+
+.table{width:100%;border-collapse:collapse}
+.table th{font-size:11px;color:var(--gray2);text-transform:uppercase;text-align:left;padding:13px 18px;font-weight:800;letter-spacing:.05em;border-bottom:1px solid var(--line);background:var(--bg)}
+.table td{padding:14px 18px;border-bottom:1px solid var(--line);font-size:13px;font-weight:500;vertical-align:middle}
+.table tr:last-child td{border-bottom:none}
+.table tbody tr:hover{background:var(--bg)}
+.table .s{font-weight:700;color:var(--ink)}
+.cellrow{display:flex;align-items:center;gap:10px}
+.av{border-radius:50%;background:var(--acc-50);color:var(--acc-d);display:grid;place-items:center;font-weight:800;flex:0 0 auto;font-size:12px;width:32px;height:32px}
+.av.b{background:var(--blue-50);color:var(--blue)}.av.a{background:var(--amber-50);color:#946514}.av.p{background:var(--purple-50);color:var(--purple)}
+.plate{display:inline-flex;font-size:11.5px;font-weight:800;letter-spacing:.05em;background:var(--ink);color:#fff;padding:3px 8px;border-radius:6px}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:9px;white-space:nowrap}
+.st .d{width:6px;height:6px;border-radius:50%;background:currentColor}
+.st.ok{background:var(--acc-50);color:var(--acc-d)}.st.go{background:var(--blue-50);color:var(--blue)}
+.st.warn{background:var(--amber-50);color:#946514}.st.off{background:var(--bg);color:var(--gray)}.st.red{background:var(--red-50);color:var(--red)}.st.pur{background:var(--purple-50);color:var(--purple)}
+.tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:4px;width:max-content}
+.tabs button{height:34px;padding:0 15px;border-radius:8px;font-size:12.5px;font-weight:700;color:var(--gray)}
+.tabs button.on{background:var(--acc-50);color:var(--acc-d)}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:12px 18px;border-radius:12px;opacity:0;transition:.3s;pointer-events:none;z-index:90;box-shadow:0 12px 30px -10px rgba(0,0,0,.5)}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hamburger{display:none}
+.tw{width:100%;overflow-x:auto}.tw::-webkit-scrollbar{height:7px}.tw::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.tabs{max-width:100%;overflow-x:auto}.tabs::-webkit-scrollbar{display:none}
+
+/* live ops map */
+.opsmap{position:relative;flex:1;min-height:0;border-radius:16px;overflow:hidden;background:#EAEDEA;border:1px solid var(--line)}
+.opsmap svg{position:absolute;inset:0;width:100%;height:100%}
+.carmk{position:absolute;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:9px;background:var(--ink);display:grid;place-items:center;color:#fff;box-shadow:0 6px 16px -6px rgba(0,0,0,.5);z-index:5}
+.carmk.on{background:var(--acc)}.carmk.busy{background:var(--blue)}
+.carmk .ic{width:16px;height:16px}
+.legend{position:absolute;left:14px;bottom:14px;background:#fff;border-radius:12px;padding:11px 14px;box-shadow:0 8px 24px -10px rgba(0,0,0,.3);font-size:12px;font-weight:700;display:flex;gap:16px}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:6px}
+
+/* doc review */
+.docgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.docbox{border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--bg)}
+.docbox .thumb{height:120px;background:repeating-linear-gradient(45deg,#EEF1F0 0 12px,#E6EAE9 12px 24px);display:grid;place-items:center;color:var(--gray2)}
+.docbox .cap{padding:9px 12px;font-size:12px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+
+@media(max-width:1080px){.g4{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr!important}.docgrid{grid-template-columns:1fr}}
+@media(max-width:880px){
+  .admin{grid-template-columns:1fr}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:270px;z-index:70;transform:translateX(-100%);transition:transform .26s ease;box-shadow:0 24px 60px rgba(12,18,26,.4)}
+  .sidebar.open{transform:none}
+  .backdrop{position:fixed;inset:0;background:rgba(12,18,26,.45);opacity:0;visibility:hidden;transition:.26s;z-index:65}
+  .backdrop.show{opacity:1;visibility:visible}
+  .hamburger{display:grid}.searchbar{display:none}
+  .topbar{padding:0 16px;gap:10px;height:62px;flex:0 0 62px}.topbar .pg{font-size:16px}.topbar .cr{display:none}
+  .newbtn .lbl{display:none}.newbtn{width:42px;padding:0}
+  .content{padding:18px 16px 40px}.table{min-width:640px}.ph{flex-wrap:wrap;gap:10px}
+  .bar{flex-wrap:wrap;gap:12px}
+}
+@media(max-width:540px){.g4,.g3{grid-template-columns:1fr}.kpi .v{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="admin">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sb">
+    <div class="brand"><span class="m"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" stroke-linejoin="round"/></svg></span><div><div class="n">Ride Booking</div><div class="t">Operations</div></div></div>
+    <div class="navlbl">Overview</div>
+    <button class="nav on" data-go="dashboard"><svg class="ic"><use href="#grid"/></svg>Dashboard</button>
+    <button class="nav" data-go="liveops"><svg class="ic"><use href="#radar"/></svg>Live operations <span class="badge">214</span></button>
+    <div class="navlbl">Marketplace</div>
+    <button class="nav" data-go="rides"><svg class="ic"><use href="#route"/></svg>Rides <span class="badge">37</span></button>
+    <button class="nav" data-go="riders"><svg class="ic"><use href="#users"/></svg>Riders</button>
+    <button class="nav" data-go="drivers"><svg class="ic"><use href="#wheel"/></svg>Drivers</button>
+    <button class="nav" data-go="kyc"><svg class="ic"><use href="#idcard"/></svg>Driver KYC <span class="badge amber">8</span></button>
+    <div class="uchip"><span class="av">PM</span><div class="grow"><div class="fw7 f13" style="color:#fff">Priya Menon</div><div class="f12" style="color:rgba(255,255,255,.5)">Ops Lead · KL</div></div></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <button class="iconbtn hamburger" id="ham"><svg class="ic"><use href="#menu"/></svg></button>
+      <div class="grow"><div class="pg" id="pg">Dashboard</div><div class="cr" id="cr">Tuesday, 25 June 2026 · Kuala Lumpur region</div></div>
+      <div class="searchbar"><svg class="ic"><use href="#search"/></svg><input placeholder="Search rides, drivers, riders…"></div>
+      <button class="iconbtn"><svg class="ic"><use href="#bell"/></svg><span class="dot"></span></button>
+    </header>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <section class="view active" data-view="dashboard">
+        <div class="grid g4">
+          <div class="kpi"><div class="top"><span class="ci"><svg class="ic"><use href="#route"/></svg></span><span class="delta up">+14.2%</span></div><div class="v">8,420</div><div class="l">Rides today</div></div>
+          <div class="kpi"><div class="top"><span class="ci"><svg class="ic"><use href="#money"/></svg></span><span class="delta up">+9.4%</span></div><div class="v">RM 186K</div><div class="l">Gross bookings (today)</div></div>
+          <div class="kpi"><div class="top"><span class="ci"><svg class="ic"><use href="#wheel"/></svg></span><span class="delta up">+5.1%</span></div><div class="v">214</div><div class="l">Drivers online now</div></div>
+          <div class="kpi"><div class="top"><span class="ci" style="background:var(--amber-50);color:#946514"><svg class="ic"><use href="#idcard"/></svg></span><span class="delta down">8 new</span></div><div class="v">8</div><div class="l">KYC pending review</div></div>
+        </div>
+
+        <div class="panel p0 mt16 fill">
+          <div class="ph" style="padding:20px 20px 14px;margin:0;flex:0 0 auto"><h3>Live rides</h3><button class="btn sm" data-go="rides">View all</button></div>
+          <div class="tw"><table class="table">
+            <thead><tr><th>Trip</th><th>Rider</th><th>Driver</th><th>Type</th><th>Fare</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="s">#LJ-90412</td><td><div class="cellrow"><span class="av">NA</span>Nurul A.</div></td><td>Arjun Rao</td><td><span class="st pur">Share</span></td><td class="s">RM 9.40</td><td><span class="st go"><span class="d"></span>On trip</span></td></tr>
+              <tr><td class="s">#LJ-90411</td><td><div class="cellrow"><span class="av b">TW</span>Tan Wei L.</div></td><td>Imran Hakim</td><td><span class="st ok">Ride</span></td><td class="s">RM 13.20</td><td><span class="st warn"><span class="d"></span>To pickup</span></td></tr>
+              <tr><td class="s">#LJ-90410</td><td><div class="cellrow"><span class="av a">RK</span>Raj Kumar</div></td><td class="muted">— matching</td><td><span class="st">Ride</span></td><td class="s">RM 26.50</td><td><span class="st warn"><span class="d"></span>Finding</span></td></tr>
+              <tr><td class="s">#LJ-90409</td><td><div class="cellrow"><span class="av">SL</span>Siti Liyana</div></td><td>Chong Mei Y.</td><td><span class="st">Ride</span></td><td class="s">RM 18.80</td><td><span class="st go"><span class="d"></span>On trip</span></td></tr>
+              <tr><td class="s">#LJ-90408</td><td><div class="cellrow"><span class="av b">DV</span>David Voon</div></td><td>Suresh P.</td><td><span class="st pur">Ride</span></td><td class="s">RM 41.00</td><td><span class="st ok"><span class="d"></span>Completed</span></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- LIVE OPS -->
+      <section class="view" data-view="liveops">
+        <div class="grid g4" style="margin-bottom:16px">
+          <div class="kpi"><div class="v" style="color:var(--acc-d)">214</div><div class="l">Drivers online</div></div>
+          <div class="kpi"><div class="v" style="color:var(--blue)">128</div><div class="l">On a trip</div></div>
+          <div class="kpi"><div class="v">37</div><div class="l">Requests waiting</div></div>
+          <div class="kpi"><div class="v">3.2 min</div><div class="l">Avg pickup ETA</div></div>
+        </div>
+        <div class="vgrid split" style="grid-template-columns:1fr 360px">
+          <div class="panel fill">
+            <div class="ph" style="flex:0 0 auto"><div><h3>Klang Valley · live map</h3><div class="s">Real-time driver & trip positions</div></div><div class="tabs"><button class="on">All</button><button>Online</button><button>Surge</button></div></div>
+            <div class="opsmap" id="opsmap">
+              <div class="legend"><span><i style="background:var(--acc)"></i>Available</span><span><i style="background:var(--blue)"></i>On trip</span><span><i style="background:var(--ink)"></i>Idle</span></div>
+            </div>
+          </div>
+          <div class="panel p0 fill">
+            <div class="ph" style="padding:20px 20px 12px;margin:0;flex:0 0 auto"><h3>Surge zones</h3></div>
+            <div class="tw"><table class="table">
+              <thead><tr><th>Zone</th><th>Demand</th><th>Mult.</th></tr></thead>
+              <tbody>
+                <tr><td class="s">Bukit Bintang</td><td><span class="st red"><span class="d"></span>Very high</span></td><td class="s">1.8×</td></tr>
+                <tr><td class="s">KLCC</td><td><span class="st warn"><span class="d"></span>High</span></td><td class="s">1.5×</td></tr>
+                <tr><td class="s">KL Sentral</td><td><span class="st warn"><span class="d"></span>High</span></td><td class="s">1.4×</td></tr>
+                <tr><td class="s">Bangsar</td><td><span class="st ok"><span class="d"></span>Normal</span></td><td class="s">1.0×</td></tr>
+                <tr><td class="s">Mont Kiara</td><td><span class="st ok"><span class="d"></span>Normal</span></td><td class="s">1.0×</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIDES -->
+      <section class="view" data-view="rides">
+        <div class="row between bar" style="margin-bottom:16px;flex:0 0 auto">
+          <div class="tabs"><button class="on">All</button><button>Ongoing</button><button>Completed</button><button>Cancelled</button></div>
+          <div class="row" style="gap:10px"><button class="btn"><svg class="ic"><use href="#filter"/></svg>Filters</button><button class="btn"><svg class="ic"><use href="#download"/></svg>Export</button></div>
+        </div>
+        <div class="panel p0 fill">
+          <div class="tw"><table class="table">
+            <thead><tr><th>Trip</th><th>Rider</th><th>Driver</th><th>Route</th><th>Type</th><th>Distance</th><th>Fare</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="s">#LJ-90412</td><td><div class="cellrow"><span class="av">NA</span>Nurul Aisyah</div></td><td>Arjun Rao</td><td class="muted">KLCC → Mid Valley</td><td><span class="st pur">Share</span></td><td>14.2 km</td><td class="s">RM 9.40</td><td><span class="st go"><span class="d"></span>On trip</span></td></tr>
+              <tr><td class="s">#LJ-90411</td><td><div class="cellrow"><span class="av b">TW</span>Tan Wei Liang</div></td><td>Imran Hakim</td><td class="muted">Bangsar → KL Sentral</td><td><span class="st ok">Ride</span></td><td>4.8 km</td><td class="s">RM 13.20</td><td><span class="st warn"><span class="d"></span>To pickup</span></td></tr>
+              <tr><td class="s">#LJ-90410</td><td><div class="cellrow"><span class="av a">RK</span>Raj Kumar</div></td><td class="muted">— matching</td><td class="muted">Sunway → Subang</td><td><span class="st">Ride</span></td><td>9.1 km</td><td class="s">RM 26.50</td><td><span class="st warn"><span class="d"></span>Finding</span></td></tr>
+              <tr><td class="s">#LJ-90409</td><td><div class="cellrow"><span class="av">SL</span>Siti Liyana</div></td><td>Chong Mei Yi</td><td class="muted">TRX → Mont Kiara</td><td><span class="st">Ride</span></td><td>11.6 km</td><td class="s">RM 18.80</td><td><span class="st go"><span class="d"></span>On trip</span></td></tr>
+              <tr><td class="s">#LJ-90408</td><td><div class="cellrow"><span class="av b">DV</span>David Voon</div></td><td>Suresh Pillai</td><td class="muted">KLIA → Bukit Bintang</td><td><span class="st pur">Ride</span></td><td>58 km</td><td class="s">RM 41.00</td><td><span class="st ok"><span class="d"></span>Completed</span></td></tr>
+              <tr><td class="s">#LJ-90407</td><td><div class="cellrow"><span class="av a">AG</span>Aishah G.</div></td><td>Lee Chin Hooi</td><td class="muted">Cheras → Ampang</td><td><span class="st ok">Ride</span></td><td>6.3 km</td><td class="s">RM 11.00</td><td><span class="st red"><span class="d"></span>Cancelled</span></td></tr>
+              <tr><td class="s">#LJ-90406</td><td><div class="cellrow"><span class="av">JM</span>Jason Mok</div></td><td>Faridah Yusof</td><td class="muted">Setapak → Wangsa Maju</td><td><span class="st pur">Share</span></td><td>5.0 km</td><td class="s">RM 7.80</td><td><span class="st ok"><span class="d"></span>Completed</span></td></tr>
+            </tbody>
+          </table></div>
+          <div class="row between" style="padding:15px 20px;border-top:1px solid var(--line)"><span class="muted f12">Showing 7 of 8,420 rides today</span><div class="row" style="gap:8px"><button class="btn sm">Prev</button><button class="btn sm pri">1</button><button class="btn sm">2</button><button class="btn sm">3</button><button class="btn sm">Next</button></div></div>
+        </div>
+      </section>
+
+      <!-- RIDERS -->
+      <section class="view" data-view="riders">
+        <div class="row between bar" style="margin-bottom:16px;flex:0 0 auto">
+          <button class="btn"><svg class="ic"><use href="#download"/></svg>Export</button>
+        </div>
+        <div class="panel p0 fill">
+          <div class="tw"><table class="table">
+            <thead><tr><th>Rider</th><th>Phone</th><th>City</th><th>Trips</th><th>Rating</th><th>Spent</th><th>Status</th><th style="text-align:right">Action</th></tr></thead>
+            <tbody>
+              <tr><td><div class="cellrow"><span class="av">NA</span><div><div class="s">Nurul Aisyah</div><div class="muted f12">nurul.aisyah@email.com</div></div></div></td><td>+60 12-345 6789</td><td>Kuala Lumpur</td><td>142</td><td><span class="st ok">★ 4.97</span></td><td class="s">RM 2,418</td><td><span class="st ok"><span class="d"></span>Active</span></td><td style="text-align:right"><button class="btn sm">View</button></td></tr>
+              <tr><td><div class="cellrow"><span class="av b">TW</span><div><div class="s">Tan Wei Liang</div><div class="muted f12">weiliang.tan@email.com</div></div></div></td><td>+60 16-220 1184</td><td>Petaling Jaya</td><td>88</td><td><span class="st ok">★ 4.91</span></td><td class="s">RM 1,690</td><td><span class="st pur"><span class="d"></span>Ride Pass</span></td><td style="text-align:right"><button class="btn sm">View</button></td></tr>
+              <tr><td><div class="cellrow"><span class="av a">RK</span><div><div class="s">Raj Kumar</div><div class="muted f12">raj.kumar@email.com</div></div></div></td><td>+60 19-887 0091</td><td>Shah Alam</td><td>34</td><td><span class="st ok">★ 4.8</span></td><td class="s">RM 740</td><td><span class="st ok"><span class="d"></span>Active</span></td><td style="text-align:right"><button class="btn sm">View</button></td></tr>
+              <tr><td><div class="cellrow"><span class="av">SL</span><div><div class="s">Siti Liyana</div><div class="muted f12">siti.liyana@email.com</div></div></div></td><td>+60 13-556 2245</td><td>Kuala Lumpur</td><td>211</td><td><span class="st ok">★ 4.99</span></td><td class="s">RM 3,902</td><td><span class="st pur"><span class="d"></span>Ride Pass</span></td><td style="text-align:right"><button class="btn sm">View</button></td></tr>
+              <tr><td><div class="cellrow"><span class="av b">DV</span><div><div class="s">David Voon</div><div class="muted f12">david.voon@email.com</div></div></div></td><td>+60 12-770 5512</td><td>Johor Bahru</td><td>19</td><td><span class="st warn">★ 4.2</span></td><td class="s">RM 510</td><td><span class="st red"><span class="d"></span>Flagged</span></td><td style="text-align:right"><button class="btn sm">View</button></td></tr>
+            </tbody>
+          </table></div>
+          <div class="row between" style="padding:15px 20px;border-top:1px solid var(--line)"><span class="muted f12">Showing 5 of 96,240 riders</span><div class="row" style="gap:8px"><button class="btn sm">Prev</button><button class="btn sm pri">1</button><button class="btn sm">2</button><button class="btn sm">Next</button></div></div>
+        </div>
+      </section>
+
+      <!-- DRIVERS -->
+      <section class="view" data-view="drivers">
+        <div class="row between bar" style="margin-bottom:16px;flex:0 0 auto">
+          <div class="tabs"><button class="on">All</button><button>Online</button></div>
+        </div>
+        <div class="panel p0 fill">
+          <div class="tw"><table class="table">
+            <thead><tr><th>Driver</th><th>Vehicle</th><th>Plate</th><th>Zone</th><th>Trips</th><th>Rating</th><th>Status</th><th style="text-align:right">Action</th></tr></thead>
+            <tbody>
+              <tr><td><div class="cellrow"><span class="av">AR</span><div><div class="s">Arjun Rao</div><div class="muted f12">DRV-10182</div></div></div></td><td>Perodua Bezza</td><td><span class="plate">WXY 8821</span></td><td>KL Central</td><td>1,284</td><td><span class="st ok">★ 4.92</span></td><td><span class="st go"><span class="d"></span>On trip</span></td><td style="text-align:right"><button class="btn sm">View</button></td></tr>
+              <tr><td><div class="cellrow"><span class="av b">IH</span><div><div class="s">Imran Hakim</div><div class="muted f12">DRV-10211</div></div></div></td><td>Proton Saga</td><td><span class="plate">VBA 3390</span></td><td>Petaling Jaya</td><td>980</td><td><span class="st ok">★ 4.88</span></td><td><span class="st ok"><span class="d"></span>Online</span></td><td style="text-align:right"><button class="btn sm">View</button></td></tr>
+              <tr><td><div class="cellrow"><span class="av a">CM</span><div><div class="s">Chong Mei Yi</div><div class="muted f12">DRV-10245</div></div></div></td><td>Honda City</td><td><span class="plate">WPK 7741</span></td><td>Mont Kiara</td><td>1,510</td><td><span class="st ok">★ 4.96</span></td><td><span class="st go"><span class="d"></span>On trip</span></td><td style="text-align:right"><button class="btn sm">View</button></td></tr>
+              <tr><td><div class="cellrow"><span class="av p">SP</span><div><div class="s">Suresh Pillai</div><div class="muted f12">DRV-10090</div></div></div></td><td>Toyota Camry</td><td><span class="plate">JKL 1208</span></td><td>KLIA line</td><td>2,340</td><td><span class="st ok">★ 4.94</span></td><td><span class="st off"><span class="d"></span>Offline</span></td><td style="text-align:right"><button class="btn sm">View</button></td></tr>
+              <tr><td><div class="cellrow"><span class="av">FY</span><div><div class="s">Faridah Yusof</div><div class="muted f12">DRV-10302</div></div></div></td><td>Perodua Myvi</td><td><span class="plate">BNT 5567</span></td><td>Wangsa Maju</td><td>640</td><td><span class="st warn">★ 4.5</span></td><td><span class="st red"><span class="d"></span>Suspended</span></td><td style="text-align:right"><button class="btn sm">View</button></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- DRIVER KYC -->
+      <section class="view" data-view="kyc">
+        <div class="vgrid g2c" style="grid-template-columns:1fr 380px">
+          <div class="panel p0 fill">
+            <div class="ph" style="padding:20px 20px 14px;margin:0;flex:0 0 auto"><h3>Pending verification</h3><div class="tabs"><button class="on">Pending <b style="color:var(--amber)">8</b></button><button>Approved</button><button>Rejected</button></div></div>
+            <div class="tw"><table class="table">
+              <thead><tr><th>Applicant</th><th>Vehicle</th><th>Identity</th><th>Licence</th><th>Vehicle docs</th><th>Bank</th><th style="text-align:right">Action</th></tr></thead>
+              <tbody>
+                <tr data-rid="k1"><td><div class="cellrow"><span class="av b">MF</span><div><div class="s">Mohd Faris</div><div class="muted f12">DRV-10410 · KL</div></div></div></td><td>Perodua Myvi</td><td class="cst"><span class="st ok"><span class="d"></span>OK</span></td><td class="cst"><span class="st ok"><span class="d"></span>OK</span></td><td class="cst"><span class="st warn"><span class="d"></span>Review</span></td><td class="cst"><span class="st ok"><span class="d"></span>OK</span></td><td style="text-align:right" class="act"><button class="btn sm pri" data-approve="k1">Approve</button></td></tr>
+                <tr data-rid="k2"><td><div class="cellrow"><span class="av a">LH</span><div><div class="s">Lim Hwee Kar</div><div class="muted f12">DRV-10411 · PJ</div></div></div></td><td>Honda City</td><td class="cst"><span class="st ok"><span class="d"></span>OK</span></td><td class="cst"><span class="st ok"><span class="d"></span>OK</span></td><td class="cst"><span class="st ok"><span class="d"></span>OK</span></td><td class="cst"><span class="st ok"><span class="d"></span>OK</span></td><td style="text-align:right" class="act"><button class="btn sm pri" data-approve="k2">Approve</button></td></tr>
+                <tr data-rid="k3"><td><div class="cellrow"><span class="av p">RV</span><div><div class="s">Ravi Velu</div><div class="muted f12">DRV-10412 · Shah Alam</div></div></div></td><td>Proton Saga</td><td class="cst"><span class="st ok"><span class="d"></span>OK</span></td><td class="cst"><span class="st warn"><span class="d"></span>Expiring</span></td><td class="cst"><span class="st ok"><span class="d"></span>OK</span></td><td class="cst"><span class="st ok"><span class="d"></span>OK</span></td><td style="text-align:right" class="act"><button class="btn sm pri" data-approve="k3">Approve</button></td></tr>
+                <tr data-rid="k4"><td><div class="cellrow"><span class="av">NS</span><div><div class="s">Nadia Sofea</div><div class="muted f12">DRV-10413 · KL</div></div></div></td><td>Toyota Vios</td><td class="cst"><span class="st ok"><span class="d"></span>OK</span></td><td class="cst"><span class="st ok"><span class="d"></span>OK</span></td><td class="cst"><span class="st ok"><span class="d"></span>OK</span></td><td class="cst"><span class="st warn"><span class="d"></span>Pending</span></td><td style="text-align:right" class="act"><button class="btn sm pri" data-approve="k4">Approve</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+      </section>
+
+
+
+
+    </div>
+  </div>
+</div>
+
+<div class="backdrop" id="bd"></div>
+<div class="toast" id="toast">Saved</div>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol>
+<symbol id="radar" viewBox="0 0 24 24"><path d="M19.07 4.93A10 10 0 1 1 12 2"/><path d="M15.5 8.5A5 5 0 1 0 17 12"/><path d="M12 12 17 7"/></symbol>
+<symbol id="route" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8 6h7a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h7"/></symbol>
+<symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 19.5c0-3 2.9-5 6.5-5s6.5 2 6.5 5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.6c2 .6 3.5 2 3.5 4.9"/></symbol>
+<symbol id="wheel" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v6M4.2 18l5-3.3M19.8 18l-5-3.3"/></symbol>
+<symbol id="idcard" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5 16c.5-1.6 1.7-2.5 3-2.5s2.5.9 3 2.5M14 10h4M14 13.5h4"/></symbol>
+<symbol id="license" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5 16c.4-1.4 1.6-2.3 3-2.3s2.6.9 3 2.3M14 9h5M14 12h5M14 15h3"/></symbol>
+<symbol id="doc" viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v4h4M9 12h6M9 16h6"/></symbol>
+<symbol id="tag" viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3.4 13.4a2 2 0 0 1 0-2.8L10.6 3.4A2 2 0 0 1 12 3H19a2 2 0 0 1 2 2v7a2 2 0 0 1-.4 1.4Z"/><circle cx="16.5" cy="7.5" r="1"/></symbol>
+<symbol id="percent" viewBox="0 0 24 24"><path d="M19 5 5 19"/><circle cx="7.5" cy="7.5" r="1.6"/><circle cx="16.5" cy="16.5" r="1.6"/></symbol>
+<symbol id="bank" viewBox="0 0 24 24"><path d="M3 10 12 4l9 6M4 10h16M5 10v8M9 10v8M15 10v8M19 10v8M3 20h18"/></symbol>
+<symbol id="gift" viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 13h16M12 9v11M12 9C10 9 8 8 8 6.5S9.5 4 11 5s1 4 1 4 1-3 2.5-4 2.5 1.5 2.5 1.5S14 9 12 9Z"/></symbol>
+<symbol id="chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M20 20H3"/></symbol>
+<symbol id="money" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2.5"/><circle cx="12" cy="12" r="3"/><path d="M5 9.5h.01M19 14.5h.01"/></symbol>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></symbol>
+<symbol id="bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6M9.5 21a2.5 2.5 0 0 0 5 0"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="filter" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v5l-4 2v-7L3 5Z"/></symbol>
+<symbol id="download" viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 4 5-4M5 21h14"/></symbol>
+<symbol id="menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+<symbol id="car" viewBox="0 0 24 24"><path d="M5 16v-2.5l1.4-3.3A1.5 1.5 0 0 1 7.8 9.3h8.4a1.5 1.5 0 0 1 1.4.9L19 13.5V16a.8.8 0 0 1-.8.8H5.8A.8.8 0 0 1 5 16Z"/><path d="M5.5 13.5h13" stroke-width="1.8"/></symbol>
+</defs></svg>
+
+<script>
+const titles={
+  dashboard:['Dashboard','Tuesday, 25 June 2026 · Kuala Lumpur region'],
+  liveops:['Live operations','Real-time marketplace · Klang Valley'],
+  rides:['Rides','All trips across the network'],
+  riders:['Riders','Rider accounts & history'],
+  drivers:['Drivers','Driver-partners & fleet'],
+  kyc:['Driver KYC','Verify documents · 8 pending review'],
+};
+function go(id){if(!titles[id])return;document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.dataset.view===id));document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.go===id));document.getElementById('pg').textContent=titles[id][0];document.getElementById('cr').textContent=titles[id][1];document.querySelector('.content').scrollTop=0;}
+let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2200);}
+
+// live ops map render
+(function(){const el=document.getElementById('opsmap');if(!el)return;
+  const map=`<svg viewBox="0 0 800 440" preserveAspectRatio="xMidYMid slice"><rect width="800" height="440" fill="#EAEDEA"/><g fill="#DDE3DD"><rect x="40" y="40" width="220" height="120" rx="10"/><rect x="320" y="30" width="180" height="100" rx="10"/><rect x="560" y="60" width="200" height="140" rx="10"/><rect x="60" y="260" width="200" height="140" rx="10"/><rect x="540" y="280" width="220" height="130" rx="10"/></g><g fill="#CFE6D8"><rect x="320" y="180" width="160" height="120" rx="14"/></g><g stroke="#F4F6F4" stroke-width="20" fill="none" stroke-linecap="round"><path d="M-20 200 H820"/><path d="M300 -20 V460"/><path d="M540 -20 V460"/></g><g stroke="#FBFCFB" stroke-width="9" fill="none"><path d="M-20 110 H820"/><path d="M-20 330 H820"/><path d="M140 -20 V460"/><path d="M680 -20 V460"/></g></svg>`;
+  const cars=[[18,30,'on'],[42,22,'busy'],[63,40,'on'],[80,18,'busy'],[30,68,'on'],[55,75,'busy'],[72,62,'on'],[88,80,''],[12,52,''],[48,48,'busy'],[68,28,'on'],[35,38,'on']];
+  let h=map;cars.forEach(c=>h+=`<div class="carmk ${c[2]}" style="left:${c[0]}%;top:${c[1]}%"><svg class="ic"><use href="#car"/></svg></div>`);
+  el.innerHTML=h+el.innerHTML;
+})();
+
+const sb=document.getElementById('sb'),bd=document.getElementById('bd'),ham=document.getElementById('ham');
+function drawer(o){sb.classList.toggle('open',o);bd.classList.toggle('show',o);}
+ham.addEventListener('click',()=>drawer(!sb.classList.contains('open')));bd.addEventListener('click',()=>drawer(false));
+document.querySelectorAll('.table').forEach(t=>{if(t.closest('.tw'))return;const w=document.createElement('div');w.className='tw';t.parentNode.insertBefore(w,t);w.appendChild(t);});
+document.addEventListener('click',e=>{
+  const nav=e.target.closest('[data-go]');if(nav){go(nav.dataset.go);drawer(false);return;}
+  const ap=e.target.closest('[data-approve]');if(ap){const tr=document.querySelector('tr[data-rid="'+ap.dataset.approve+'"]');if(tr){tr.querySelectorAll('.cst').forEach(c=>c.innerHTML='<span class="st ok"><span class="d"></span>OK</span>');tr.querySelector('.act').innerHTML='<span class="st ok"><span class="d"></span>Approved</span>';}toast('Driver approved · account activated');return;}
+  const tab=e.target.closest('.tabs button');if(tab){tab.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));tab.classList.add('on');}
+});
+</script>
+</body>
+</html>

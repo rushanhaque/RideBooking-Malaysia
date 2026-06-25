@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Ride Booking — Driver</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0E1216;--ink2:#1B222B;--gray:#5B6470;--gray2:#8A929E;--line:#ECEEF1;--soft:#F4F6F8;--bg:#FFFFFF;
+  --acc:#00B26B;--acc-d:#00935A;--acc-50:#E6F8F0;--acc-100:#C9F0DE;
+  --blue:#2E73E8;--blue-50:#EAF1FE;--amber:#E0A23A;--amber-50:#FBF1E0;--red:#E5533C;--red-50:#FCEDEA;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:Inter,system-ui,sans-serif;background:#D9DCE1;color:var(--ink);display:flex;justify-content:center;line-height:1.45;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit}
+.ic{width:22px;height:22px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto;display:block}
+
+.app{width:430px;max-width:100%;height:100vh;height:100dvh;max-height:932px;background:var(--bg);position:relative;display:flex;flex-direction:column;overflow:hidden}
+@media(min-width:480px){.app{height:912px;margin:auto;border-radius:40px;box-shadow:0 40px 90px -30px rgba(13,20,30,.55)}}
+
+.stage{flex:1;position:relative;min-height:0}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
+.screen.active{display:flex;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden}.scroll::-webkit-scrollbar{width:0}
+.grow{flex:1;min-width:0}.row{display:flex;align-items:center}.between{justify-content:space-between}.col{display:flex;flex-direction:column}
+.muted{color:var(--gray)}.g2{color:var(--gray2)}.spx{font-family:Sora,Inter,sans-serif}.cap{letter-spacing:.02em}
+.fw5{font-weight:500}.fw6{font-weight:600}.fw7{font-weight:700}.fw8{font-weight:800}
+.f11{font-size:11px}.f12{font-size:12px}.f13{font-size:13px}.f14{font-size:14px}.f15{font-size:15px}.f16{font-size:16px}.f18{font-size:18px}
+.mt4{margin-top:4px}.mt6{margin-top:6px}.mt8{margin-top:8px}.mt10{margin-top:10px}.mt12{margin-top:12px}.mt14{margin-top:14px}.mt16{margin-top:16px}.mt18{margin-top:18px}.mt20{margin-top:20px}.mt24{margin-top:24px}
+.pad{padding:0 20px}
+
+.hdr{padding:22px 20px 8px;display:flex;align-items:center;gap:12px}
+.back{width:40px;height:40px;border-radius:13px;border:1px solid var(--line);display:grid;place-items:center;flex:0 0 auto;background:#fff;transition:background .15s}.back:active{background:var(--soft)}
+.h-title{font-size:19px;font-weight:800;letter-spacing:-.02em;font-family:Sora,sans-serif}
+.h-sub{font-size:12.5px;color:var(--gray);font-weight:500;margin-top:1px}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:9px;height:54px;border-radius:15px;font-size:15.5px;font-weight:700;width:100%;transition:filter .12s,transform .1s,background .15s}
+.btn:active{transform:scale(.985)}
+.btn.pri{background:var(--ink);color:#fff}.btn.pri:active{filter:brightness(1.4)}
+.btn.acc{background:var(--acc);color:#fff}.btn.acc:active{filter:brightness(.96)}
+.btn.out{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.btn.soft{background:var(--soft);color:var(--ink)}
+.btn.danger{background:var(--red);color:#fff}
+.btn .ic{width:20px;height:20px;stroke-width:2.2}
+.btn.sm{height:40px;font-size:13px;border-radius:11px;width:auto;padding:0 15px}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:30px;background:var(--soft);color:var(--ink)}
+
+.field{height:54px;border:1.5px solid var(--line);border-radius:14px;display:flex;align-items:center;padding:0 16px;gap:10px;background:#fff}
+.field input,.field select{flex:1;border:none;outline:none;background:none;font-size:15px;font-weight:600;color:var(--ink)}
+.field .cc{font-weight:700;color:var(--ink);border-right:1px solid var(--line);padding-right:12px}
+.flbl{font-size:12.5px;font-weight:700;color:var(--gray);margin:0 0 8px 2px}
+
+.stepbar{padding:0 20px 14px}
+.stepbar .lbl{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:8px}
+.stepbar .lbl .cur{color:var(--ink);font-weight:800}
+.stepbar .track{height:5px;background:var(--soft);border-radius:5px;overflow:hidden}
+.stepbar .fill{height:100%;border-radius:5px;background:var(--acc);transition:width .4s}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}
+.lrow{display:flex;align-items:center;gap:14px;padding:15px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.lrow:last-child{border-bottom:none}
+.lrow .li{width:42px;height:42px;border-radius:12px;background:var(--soft);display:grid;place-items:center;color:var(--ink);flex:0 0 auto}
+.lrow .tt{font-size:14.5px;font-weight:700}.lrow .ds{font-size:12.5px;color:var(--gray);margin-top:1px}
+.lrow .arr{margin-left:auto;color:var(--gray2)}
+
+/* KYC checklist (completes on click) */
+.kyc-step{display:flex;align-items:center;gap:14px;padding:16px;border:1.5px solid var(--line);border-radius:16px;margin-bottom:12px;background:#fff;width:100%;text-align:left;transition:border-color .15s,background .15s,transform .1s}
+.kyc-step:active{transform:scale(.99)}
+.kyc-step .ki{width:46px;height:46px;border-radius:13px;background:var(--soft);display:grid;place-items:center;color:var(--ink);flex:0 0 auto;transition:.15s}
+.kyc-step .kt{font-size:15px;font-weight:800}
+.kyc-step .kd{font-size:12.5px;color:var(--gray);margin-top:2px}
+.kyc-step .badge{margin-left:auto;flex:0 0 auto}
+.kyc-step.done{border-color:var(--acc-100);background:var(--acc-50)}
+.kyc-step.done .ki{background:var(--acc);color:#fff}
+.chk{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:#fff;flex:0 0 auto}
+.tapdot{font-size:11px;font-weight:800;color:var(--gray2);background:var(--soft);padding:6px 11px;border-radius:30px;flex:0 0 auto}
+
+.st{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:8px}
+.st .d{width:6px;height:6px;border-radius:50%;background:currentColor}
+.st.ok{background:var(--acc-50);color:var(--acc-d)}.st.go{background:var(--blue-50);color:var(--blue)}
+.st.warn{background:var(--amber-50);color:#946514}.st.red{background:var(--red-50);color:var(--red)}.st.off{background:var(--soft);color:var(--gray)}
+
+.mapwrap{position:absolute;inset:0;overflow:hidden;background:#E8EBE9}
+.mapwrap svg.mapsvg{position:absolute;inset:0;width:100%;height:100%}
+.topfloat{position:absolute;top:18px;left:20px;right:20px;z-index:20;display:flex;align-items:center;gap:12px}
+.fab{width:46px;height:46px;border-radius:14px;background:#fff;box-shadow:0 8px 24px -8px rgba(13,20,30,.35);display:grid;place-items:center;flex:0 0 auto}
+.fab.rnd{border-radius:50%}
+.earnchip{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 15px;background:var(--ink);color:#fff;border-radius:14px;box-shadow:0 8px 24px -8px rgba(13,20,30,.4);font-weight:800;font-family:Sora,sans-serif;font-size:15px}
+.carmk{position:absolute;transform:translate(-50%,-50%);z-index:11;width:38px;height:38px;border-radius:12px;background:var(--ink);display:grid;place-items:center;box-shadow:0 8px 20px -6px rgba(0,0,0,.5);color:#fff}
+.carmk .ic{width:21px;height:21px}
+.pin{position:absolute;transform:translate(-50%,-100%);z-index:10;display:flex;flex-direction:column;align-items:center}
+.pin .head{padding:5px 10px;border-radius:10px;font-size:11px;font-weight:800;color:#fff;white-space:nowrap;box-shadow:0 6px 16px -6px rgba(0,0,0,.5)}
+.pin .stem{width:2px;height:10px;background:currentColor}.pin .dot{width:14px;height:14px;border-radius:50%;border:3px solid #fff}
+.mk-pickup{color:var(--ink)}.mk-pickup .head{background:var(--ink)}.mk-pickup .dot{background:var(--ink)}
+.mk-drop{color:var(--acc-d)}.mk-drop .head{background:var(--acc-d)}.mk-drop .dot{background:var(--acc-d)}
+
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:25;background:#fff;border-radius:26px 26px 0 0;box-shadow:0 -18px 50px -28px rgba(13,20,30,.4);max-height:90%;display:flex;flex-direction:column}
+.sheet .grab{width:38px;height:5px;border-radius:5px;background:#E2E5E9;margin:9px auto 2px}
+.sheet .sc{overflow-y:auto;padding:8px 20px 22px}.sheet .sc::-webkit-scrollbar{width:0}
+
+.gobtn{position:relative;height:42px;border-radius:12px;background:var(--acc);color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700;padding:0 20px;box-shadow:none;border:none;align-self:flex-start}
+.gobtn.offline{background:var(--soft);color:var(--ink)}
+.statusdot{width:11px;height:11px;border-radius:50%;background:#fff}
+.online-ind{display:inline-flex;align-items:center;gap:7px;font-weight:800;color:var(--acc-d)}
+.online-ind .p{width:10px;height:10px;border-radius:50%;background:var(--acc);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,178,107,.5)}70%{box-shadow:0 0 0 10px rgba(0,178,107,0)}100%{box-shadow:0 0 0 0 rgba(0,178,107,0)}}
+
+/* toggle */
+.tgl{width:46px;height:27px;border-radius:30px;background:var(--line);position:relative;flex:0 0 auto;transition:background .2s}
+.tgl::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.tgl.on{background:var(--acc)}.tgl.on::after{left:22px}
+.rng{flex:1;height:36px;border-radius:10px;border:1.5px solid var(--line);font-size:13px;font-weight:700;cursor:pointer;background:#fff;color:var(--ink);transition:background .12s,border-color .12s,color .12s}
+.rng.sel{background:var(--ink);border-color:var(--ink);color:#fff}
+
+.ring{position:relative;width:56px;height:56px;flex:0 0 auto}
+.ring svg{transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:20px;font-family:Sora,sans-serif}
+.ring circle{fill:none;stroke-width:5}
+.ring .bg{stroke:var(--line)}.ring .fg{stroke:var(--acc);stroke-linecap:round;stroke-dasharray:151;stroke-dashoffset:0;animation:count 12s linear forwards}
+@keyframes count{to{stroke-dashoffset:151}}
+
+.earnbig{font-family:Sora,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.03em}
+.bars{display:flex;align-items:flex-end;gap:9px;height:130px;margin-top:6px}
+.bars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px;height:100%}
+.bars .b i{width:100%;max-width:26px;border-radius:6px;background:var(--acc-100);display:block}
+.bars .b.on i{background:var(--acc)}.bars .b span{font-size:10.5px;color:var(--gray2);font-weight:700}
+.stat{flex:1;background:var(--soft);border-radius:14px;padding:14px;text-align:center}
+.stat .v{font-family:Sora,sans-serif;font-size:20px;font-weight:800}.stat .l{font-size:11.5px;color:var(--gray);margin-top:3px;font-weight:600}
+
+.tl{position:relative;padding:0 0 16px 24px}
+.tl::before{content:"";position:absolute;left:6px;top:15px;bottom:0;width:2px;background:var(--line)}
+.tl.done::before{background:var(--acc)}.tl:last-child{padding-bottom:0}.tl:last-child::before{display:none}
+.tl .nd{position:absolute;left:0;top:1px;width:14px;height:14px;border-radius:50%;border:2px solid var(--line);background:#fff}
+.tl.done .nd{background:var(--acc);border-color:var(--acc)}
+.tl .tt{font-size:14px;font-weight:700}.tl .ts{font-size:12px;color:var(--gray);margin-top:1px}
+
+.plate{display:inline-flex;align-items:center;font-size:13px;font-weight:800;letter-spacing:.06em;background:var(--ink);color:#fff;padding:3px 9px;border-radius:7px}
+.circbtn{width:46px;height:46px;border-radius:50%;background:var(--soft);display:grid;place-items:center;flex:0 0 auto}
+.circbtn.acc{background:var(--acc);color:#fff}
+.stars{display:flex;gap:10px;justify-content:center}
+.stars .ic{width:38px;height:38px;color:#DDE1E6;stroke-width:1.6}
+.stars .ic.on{color:var(--amber);fill:var(--amber);stroke:var(--amber)}
+.bill{display:flex;justify-content:space-between;padding:8px 0;font-size:14px}
+.bill .k{color:var(--gray)}.bill .v{font-weight:700}
+.bill.tot{border-top:1px solid var(--line);margin-top:6px;padding-top:13px}
+.bill.tot .k{color:var(--ink);font-weight:800;font-size:15px}.bill.tot .v{font-weight:800;font-size:18px;font-family:Sora,sans-serif}
+
+.tabbar{flex:0 0 auto;display:flex;border-top:1px solid var(--line);background:#fff;padding-bottom:env(safe-area-inset-bottom);z-index:30}
+.app.flow .tabbar{display:none}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:11px 0 13px;color:var(--gray2);font-size:10.5px;font-weight:700}
+.tab .ic{width:24px;height:24px}.tab.on{color:var(--ink)}.tab.on .ic{stroke-width:2.3}
+
+.hero{position:absolute;inset:0;background:radial-gradient(120% 80% at 70% 0%,#1A2430 0%,#0E1216 60%);overflow:hidden}
+.hero .glow{position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(0,178,107,.32),transparent 65%);top:-90px;right:-90px}
+.soc{display:flex;align-items:center;justify-content:center;gap:10px;height:52px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:14.5px;font-weight:700;width:100%}
+.divx{display:flex;align-items:center;gap:14px;color:rgba(255,255,255,.45);font-size:12px;font-weight:600;margin:18px 0}
+.divx::before,.divx::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.16)}
+
+.toast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:12px 18px;border-radius:12px;opacity:0;transition:.3s;pointer-events:none;z-index:60;white-space:nowrap;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app dark flow" id="app">
+<div class="stage">
+
+<!-- ============ LOGIN ============ -->
+<section class="screen active" data-screen="login" data-flow data-dark>
+  <div class="hero"><div class="glow"></div>
+    <svg style="position:absolute;inset:0;opacity:.5" viewBox="0 0 430 900" preserveAspectRatio="xMidYMid slice"><g stroke="rgba(255,255,255,.06)" stroke-width="1.5" fill="none"><path d="M-20 180 H460 M-20 380 H460 M-20 600 H460"/><path d="M90 -20 V920 M220 -20 V920 M340 -20 V920"/></g><path d="M90 920 L90 600 L220 600 L220 180 L460 180" stroke="rgba(0,178,107,.5)" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+  </div>
+  <div class="scroll" style="position:relative;z-index:2;display:flex;flex-direction:column">
+    <div style="flex:1"></div>
+    <div class="pad" style="padding-bottom:34px;padding-top:30px">
+      <div class="row" style="gap:10px"><span style="width:46px;height:46px;border-radius:14px;background:var(--acc);display:grid;place-items:center"><svg class="ic" style="width:26px;height:26px;color:#fff;stroke-width:2.6"><use href="#bolt"/></svg></span>
+        <span class="spx" style="color:#fff;font-weight:800;font-size:18px">Ride Booking</span><span class="st" style="background:rgba(255,255,255,.1);color:#fff">DRIVER</span></div>
+      <div style="margin-top:26px">
+        <div class="spx" style="font-size:38px;font-weight:800;letter-spacing:-.04em;color:#fff;line-height:1.06">Drive with<br><span style="color:var(--acc)">Ride Booking.</span></div>
+        <p style="color:rgba(255,255,255,.7);font-size:15px;margin-top:14px;max-width:32ch;line-height:1.5">Flexible hours, weekly payouts and a 15% commission rate.</p>
+      </div>
+      <div class="flbl" style="color:rgba(255,255,255,.6);margin-top:30px">Mobile number</div>
+      <div class="field" style="background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18)">
+        <span class="cc" style="color:#fff;border-color:rgba(255,255,255,.2)">+60</span>
+        <input type="tel" placeholder="13-888 2200" style="color:#fff" inputmode="numeric">
+      </div>
+      <button class="btn acc" style="margin-top:14px" data-go="otp">Continue<svg class="ic"><use href="#arr"/></svg></button>
+      <div class="divx">or</div>
+      <div class="row" style="gap:12px"><button class="soc" data-go="info"><svg class="ic" style="width:19px;height:19px"><use href="#google"/></svg>Google</button><button class="soc" data-go="info"><svg class="ic" style="width:19px;height:19px;fill:#fff;stroke:none"><use href="#apple"/></svg>Apple</button></div>
+      <p style="color:rgba(255,255,255,.42);font-size:11.5px;text-align:center;margin-top:22px">Already a partner? Sign in to continue your application.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ OTP ============ -->
+<section class="screen" data-screen="otp" data-flow data-dark>
+  <div class="hero"><div class="glow"></div></div>
+  <div class="hdr" style="position:relative;z-index:2"><button class="back" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff" data-go="login"><svg class="ic"><use href="#left"/></svg></button></div>
+  <div class="scroll pad" style="position:relative;z-index:2;padding-top:14px">
+    <div class="spx" style="font-size:28px;font-weight:800;letter-spacing:-.03em;color:#fff">Verify your number</div>
+    <p style="color:rgba(255,255,255,.7);font-size:14.5px;margin-top:10px">Code sent to <span style="color:#fff;font-weight:700">+60 13-888 2200</span></p>
+    <div class="row" style="gap:9px;justify-content:space-between;margin-top:30px">
+      <div style="flex:1;height:60px;border-radius:15px;display:grid;place-items:center;font-size:24px;font-weight:800;font-family:Sora;color:#fff;border:1.5px solid rgba(255,255,255,.5);background:rgba(255,255,255,.06)">2</div>
+      <div style="flex:1;height:60px;border-radius:15px;display:grid;place-items:center;font-size:24px;font-weight:800;font-family:Sora;color:#fff;border:1.5px solid rgba(255,255,255,.5);background:rgba(255,255,255,.06)">9</div>
+      <div style="flex:1;height:60px;border-radius:15px;display:grid;place-items:center;font-size:24px;font-weight:800;font-family:Sora;color:#fff;border:1.5px solid rgba(255,255,255,.5);background:rgba(255,255,255,.06)">0</div>
+      <div style="flex:1;height:60px;border-radius:15px;display:grid;place-items:center;font-size:24px;font-weight:800;font-family:Sora;color:#fff;border:1.5px solid rgba(255,255,255,.5);background:rgba(255,255,255,.06)">4</div>
+      <div style="flex:1;height:60px;border-radius:15px;display:grid;place-items:center;font-size:24px;font-weight:800;color:rgba(255,255,255,.3);border:1.5px solid rgba(255,255,255,.18)">·</div>
+      <div style="flex:1;height:60px;border-radius:15px;display:grid;place-items:center;font-size:24px;font-weight:800;color:rgba(255,255,255,.3);border:1.5px solid rgba(255,255,255,.18)">·</div>
+    </div>
+    <button class="btn acc" style="margin-top:30px" data-go="info">Verify & continue</button>
+    <div style="text-align:center;color:rgba(255,255,255,.55);font-size:13px;margin-top:20px">Resend code in <span style="color:#fff;font-weight:700">0:24</span></div>
+  </div>
+</section>
+
+<!-- ============ INFO INPUT ============ -->
+<section class="screen" data-screen="info" data-flow>
+  <div class="hdr"><button class="back" data-go="login"><svg class="ic"><use href="#left"/></svg></button><div class="grow"><div class="h-title">Tell us about you</div><div class="h-sub">Step 1 of 2 · Personal details</div></div></div>
+  <div class="stepbar"><div class="track"><div class="fill" style="width:14%"></div></div></div>
+  <div class="scroll pad" style="padding-top:6px;padding-bottom:24px">
+    <div class="col" style="align-items:center;margin:2px 0 20px">
+      <div style="width:88px;height:88px;border-radius:50%;background:var(--soft);border:1px solid var(--line);display:grid;place-items:center;position:relative"><svg class="ic" style="width:38px;height:38px;color:var(--gray2)"><use href="#user"/></svg><span style="position:absolute;right:-2px;bottom:-2px;width:32px;height:32px;border-radius:50%;background:var(--ink);display:grid;place-items:center;border:3px solid #fff"><svg class="ic" style="width:15px;height:15px;color:#fff"><use href="#cam"/></svg></span></div>
+      <span class="f12 fw7 muted mt10">Profile photo</span>
+    </div>
+    <div class="flbl">Full name (as per MyKad)</div>
+    <div class="field"><svg class="ic" style="width:18px;height:18px;color:var(--gray2)"><use href="#user"/></svg><input value="Ahmad Faizal bin Razak" placeholder="Full name"></div>
+    <div class="flbl mt16">MyKad / IC number</div>
+    <div style="font-size:11.5px;color:var(--gray2);font-weight:500;margin-bottom:7px">Format: XXXXXX-XX-XXXX (6 digits, 2 digits, 4 digits)</div>
+    <div class="field"><svg class="ic" style="width:18px;height:18px;color:var(--gray2)"><use href="#idcard"/></svg><input value="900812-14-5523" placeholder="123456-78-9012" inputmode="numeric"></div>
+    <div class="row mt16" style="gap:12px">
+      <div style="flex:1"><div class="flbl">City</div><div class="field"><select><option>Kuala Lumpur</option><option>Petaling Jaya</option><option>Shah Alam</option><option>Johor Bahru</option><option>Penang</option></select></div></div>
+      <div style="flex:1"><div class="flbl">Gender</div><div class="field"><select><option>Male</option><option>Female</option></select></div></div>
+    </div>
+    <div class="flbl mt16">Emergency contact</div>
+    <div class="field"><svg class="ic" style="width:18px;height:18px;color:var(--gray2)"><use href="#call"/></svg><span class="cc">+60</span><input type="tel" value="19-220 7781" placeholder="Phone number"></div>
+  </div>
+  <div class="pad" style="padding-bottom:24px"><button class="btn pri" data-go="kyc">Continue to verification<svg class="ic"><use href="#arr"/></svg></button></div>
+</section>
+
+<!-- ============ KYC CHECKLIST (tap to complete) ============ -->
+<section class="screen" data-screen="kyc" data-flow>
+  <div class="hdr"><button class="back" data-go="info"><svg class="ic"><use href="#left"/></svg></button><div class="grow"><div class="h-title">Verification (KYC)</div><div class="h-sub">Step 2 of 2 · Tap each item to complete</div></div></div>
+  <div class="stepbar"><div class="lbl"><span>Documents</span><span class="cur" id="kyc-count">0 of 4 done</span></div><div class="track"><div class="fill" id="kyc-fill" style="width:0%"></div></div></div>
+  <div class="scroll pad" style="padding-top:6px;padding-bottom:20px">
+    <p class="muted f13" style="margin-bottom:16px">Tap each card to upload & complete it. Review usually takes <span class="fw7" style="color:var(--ink)">under 24 hours</span>.</p>
+    <button class="kyc-step" data-kyc data-key="identity"><span class="ki"><svg class="ic"><use href="#idcard"/></svg></span><div class="grow"><div class="kt">Identity</div><div class="kd">MyKad front & back + selfie</div></div><span class="badge"><span class="tapdot">Tap</span></span></button>
+    <button class="kyc-step" data-kyc data-key="license"><span class="ki"><svg class="ic"><use href="#license"/></svg></span><div class="grow"><div class="kt">Driving licence</div><div class="kd">Valid Malaysian licence (CDL/GDL)</div></div><span class="badge"><span class="tapdot">Tap</span></span></button>
+    <button class="kyc-step" data-kyc data-key="vehicle"><span class="ki"><svg class="ic"><use href="#car"/></svg></span><div class="grow"><div class="kt">Vehicle details</div><div class="kd">Geran, road tax & insurance</div></div><span class="badge"><span class="tapdot">Tap</span></span></button>
+    <button class="kyc-step" data-kyc data-key="bank"><span class="ki"><svg class="ic"><use href="#bank"/></svg></span><div class="grow"><div class="kt">Bank account</div><div class="kd">For your weekly payouts</div></div><span class="badge"><span class="tapdot">Tap</span></span></button>
+    <div class="card mt8 row" style="gap:11px;background:var(--soft);border:none"><svg class="ic" style="width:20px;height:20px;color:var(--gray)"><use href="#lock"/></svg><span class="f12 muted">Your documents are encrypted and used only for verification under PDPA 2010.</span></div>
+  </div>
+  <div class="pad" style="padding-bottom:24px"><button class="btn pri" id="kyc-submit" disabled data-go="kyc-submitted">Submit for review</button></div>
+</section>
+
+<!-- ============ KYC SUBMITTED ============ -->
+<section class="screen" data-screen="kyc-submitted" data-flow>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;text-align:center">
+    <!-- animated success ring -->
+    <div style="position:relative;width:110px;height:110px;margin-bottom:28px">
+      <svg viewBox="0 0 110 110" style="position:absolute;inset:0;width:110px;height:110px">
+        <circle cx="55" cy="55" r="48" fill="none" stroke="var(--acc-100)" stroke-width="5"/>
+        <circle cx="55" cy="55" r="48" fill="none" stroke="var(--acc)" stroke-width="5"
+          stroke-dasharray="301" stroke-dashoffset="301" stroke-linecap="round"
+          style="transform:rotate(-90deg);transform-origin:55px 55px;animation:kycring 1s ease forwards .2s"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:grid;place-items:center;background:var(--acc-50);border-radius:50%;margin:8px">
+        <svg class="ic" style="width:38px;height:38px;color:var(--acc-d);stroke-width:2.4"><use href="#check"/></svg>
+      </div>
+    </div>
+    <div class="spx" style="font-size:26px;font-weight:800;letter-spacing:-.03em;color:var(--ink)">Application submitted!</div>
+    <p class="muted" style="font-size:14.5px;margin-top:12px;max-width:30ch;line-height:1.6">Your documents are being processed. Redirecting you to the app…</p>
+    <!-- countdown bar -->
+    <div style="width:160px;height:4px;background:var(--line);border-radius:4px;margin-top:28px;overflow:hidden">
+      <div id="kyc-bar" style="height:100%;background:var(--acc);border-radius:4px;width:0%;transition:width 2s linear"></div>
+    </div>
+  </div>
+</section>
+
+<style>@keyframes kycring{to{stroke-dashoffset:0}}</style>
+
+<!-- ============ DRIVER HOME ============ -->
+<section class="screen" data-screen="home">
+  <div class="mapwrap" id="map-home"></div>
+  <div class="topfloat"><button class="fab rnd" data-go="account"><span style="width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;font-family:Sora">AF</span></button>
+    <div class="earnchip" data-go="earnings"><svg class="ic" style="width:18px;height:18px;color:var(--acc)"><use href="#money"/></svg>RM 142.60</div>
+    <button class="fab"><svg class="ic" style="width:21px;height:21px"><use href="#bell"/></svg></button>
+  </div>
+  <div class="sheet" style="max-height:66%">
+    <div class="grab"></div>
+    <div class="sc">
+      <!-- KYC approved notification (hidden until KYC flow completes) -->
+      <div id="kyc-notif" style="display:none;background:var(--acc-50);border:1.5px solid var(--acc-100);border-radius:14px;padding:13px 14px;margin-bottom:14px">
+        <div class="row" style="gap:10px">
+          <span style="width:36px;height:36px;border-radius:11px;background:var(--acc);display:grid;place-items:center;flex:0 0 auto"><svg class="ic" style="width:19px;height:19px;color:#fff;stroke-width:2.6"><use href="#check"/></svg></span>
+          <div class="grow"><div class="f14 fw8" style="color:var(--acc-d)">KYC Approved</div><div class="f12" style="color:var(--acc-d);opacity:.8;margin-top:2px">Your account is active. Start accepting trips!</div></div>
+          <button onclick="document.getElementById('kyc-notif').style.display='none'" style="color:var(--acc-d);font-size:18px;line-height:1;padding:2px">×</button>
+        </div>
+      </div>
+      <div style="margin:4px 0 14px">
+        <div style="margin-bottom:10px"><div class="online-ind" style="display:none" id="ind-online"><span class="p"></span>You're online</div><div class="fw8 f16" id="ind-offline">You're offline</div></div>
+        <div class="row between" style="align-items:center;gap:12px">
+          <span class="st off" id="zone">Demand: <span style="color:var(--acc-d);font-weight:800">High</span></span>
+          <button class="gobtn offline" id="gobtn"><span class="statusdot"></span><span id="gobtn-txt">Go online</span></button>
+        </div>
+      </div>
+
+      <div class="card mt14" style="padding:14px 16px">
+        <div class="row between" style="margin-bottom:11px"><span class="f13 fw7">Pickup range</span><span class="f12 muted">Max distance from you</span></div>
+        <div class="row" style="gap:8px" data-range>
+          <button class="rng" data-rng>3 km</button>
+          <button class="rng sel" data-rng>5 km</button>
+          <button class="rng" data-rng>10 km</button>
+          <button class="rng" data-rng>15 km</button>
+          <button class="rng" data-rng>Any</button>
+        </div>
+      </div>
+
+      <div class="row mt14" style="gap:10px">
+        <div class="stat"><div class="v">RM 142.60</div><div class="l">Today</div></div>
+        <div class="stat"><div class="v">8</div><div class="l">Trips</div></div>
+        <div class="stat"><div class="v">5.8h</div><div class="l">Online</div></div>
+      </div>
+
+      <div class="row between mt18" style="margin-bottom:4px"><span class="spx f16 fw8">Heatmap</span><span class="f12 fw7 muted">Surge zones near you</span></div>
+      <div class="card" style="padding:13px;display:flex;gap:12px;align-items:center"><span style="width:44px;height:44px;border-radius:12px;background:var(--red-50);color:var(--red);display:grid;place-items:center;flex:0 0 auto;font-weight:800;font-family:Sora">1.8×</span><div class="grow"><div class="f14 fw7">Bukit Bintang · KLCC</div><div class="f12 muted mt4">High demand · 1.8× fares now</div></div><svg class="ic" style="width:20px;height:20px;color:var(--gray2)"><use href="#right"/></svg></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RIDE REQUEST ============ -->
+<section class="screen" data-screen="request" data-flow>
+  <div class="mapwrap" id="map-request"></div>
+  <div class="sheet" style="max-height:74%">
+    <div class="grab"></div>
+    <div class="sc">
+      <div class="row between" style="margin:2px 0 12px">
+        <div class="row" style="gap:12px"><div class="ring"><svg width="56" height="56"><circle class="bg" cx="28" cy="28" r="24"/><circle class="fg" cx="28" cy="28" r="24"/></svg><span class="num" id="ring-num">12</span></div>
+          <div><div class="spx f18 fw8">Share ride</div><div class="f12 muted mt4">2 stops · pooled</div></div></div>
+        <div style="text-align:right"><div class="spx" style="font-size:24px;font-weight:800">RM 9.40</div><div class="f12 fw7" style="color:var(--acc-d)">+ RM1.50 bonus</div></div>
+      </div>
+      <div class="card" style="padding:14px 16px">
+        <div class="row" style="gap:12px"><span style="width:11px;height:11px;border-radius:50%;border:3px solid var(--ink);flex:0 0 auto"></span><div class="grow"><div class="f11 fw8 g2 cap" style="text-transform:uppercase;letter-spacing:.05em">Pickup · 3 min (1.2 km)</div><div class="f13 fw6 mt4">KLCC, Jln Ampang</div></div></div>
+        <div style="height:18px;border-left:2px dotted var(--line);margin-left:5px"></div>
+        <div class="row" style="gap:12px"><span style="width:11px;height:11px;border-radius:3px;background:var(--acc-d);flex:0 0 auto"></span><div class="grow"><div class="f11 fw8 g2 cap" style="text-transform:uppercase;letter-spacing:.05em">Dropoff · 14.2 km</div><div class="f13 fw6 mt4">Mid Valley Megamall</div></div></div>
+      </div>
+      <div class="row mt12" style="gap:10px">
+        <div class="pill"><svg class="ic" style="width:15px;height:15px;color:var(--amber)"><use href="#star"/></svg>Rider 4.9</div>
+        <div class="pill"><svg class="ic" style="width:15px;height:15px"><use href="#wallet"/></svg>Wallet</div>
+        <div class="pill" style="margin-left:auto;background:var(--acc-50);color:var(--acc-d)">22 min total</div>
+      </div>
+      <button class="btn acc mt14" style="height:58px;font-size:17px" data-go="navigate">Accept · RM 9.40</button>
+      <button class="btn soft mt10" data-go="home" style="color:var(--gray)">Decline</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NAVIGATE / ON TRIP ============ -->
+<section class="screen" data-screen="navigate" data-flow>
+  <div class="mapwrap" id="map-nav"></div>
+  <div class="topfloat"><div class="earnchip" style="background:#fff;color:var(--ink)"><svg class="ic" style="width:18px;height:18px;color:var(--acc-d)"><use href="#nav"/></svg><span id="nav-instruct">Head to KLCC · 3 min</span></div></div>
+  <div class="sheet" style="max-height:64%">
+    <div class="grab"></div>
+    <div class="sc">
+      <div class="st go" id="nav-status" style="margin-bottom:10px"><span class="d"></span>Picking up rider</div>
+      <div class="row" style="gap:13px">
+        <span style="width:52px;height:52px;border-radius:16px;background:var(--soft);display:grid;place-items:center;font-weight:800;font-family:Sora;flex:0 0 auto">NA</span>
+        <div class="grow"><div class="row" style="gap:7px"><span class="f15 fw8">Nurul Aisyah</span><span class="f12 fw7" style="color:var(--amber)">★ 4.97</span></div><div class="f12 muted mt4">KLCC, Jln Ampang · Share</div></div>
+        <button class="circbtn acc"><svg class="ic" style="width:20px;height:20px"><use href="#call"/></svg></button>
+        <button class="circbtn"><svg class="ic" style="width:20px;height:20px"><use href="#chat"/></svg></button>
+      </div>
+      <div class="card mt14 row between" style="background:var(--soft);border:none">
+        <div><div class="f11 fw8 g2 cap" style="text-transform:uppercase;letter-spacing:.06em">Verify PIN with rider</div><div class="f12 muted mt4">Ask the rider for their 4-digit code</div></div>
+        <div class="spx" style="font-size:22px;font-weight:800;letter-spacing:.12em;color:var(--acc-d)">4821</div>
+      </div>
+      <button class="btn pri mt14" id="nav-action" data-nav-step>Arrived at pickup</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRIP SUMMARY ============ -->
+<section class="screen" data-screen="summary" data-flow>
+  <div class="scroll" style="padding-bottom:20px">
+    <div style="background:var(--ink);padding:38px 20px 26px;color:#fff;text-align:center">
+      <div style="width:60px;height:60px;border-radius:50%;background:var(--acc);display:grid;place-items:center;margin:0 auto"><svg class="ic" style="width:30px;height:30px;color:#fff;stroke-width:2.6"><use href="#check"/></svg></div>
+      <div class="f13 fw7" style="color:rgba(255,255,255,.6);margin-top:16px">Trip complete · you earned</div>
+      <div class="spx" style="font-size:40px;font-weight:800;margin-top:6px">RM 14.49</div>
+    </div>
+    <div class="pad" style="margin-top:-18px">
+      <div class="card">
+        <div class="f13 fw8 cap g2" style="text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Fare breakdown</div>
+        <div class="bill"><span class="k">Trip fare</span><span class="v">RM 9.40</span></div>
+        <div class="bill"><span class="k">Commission (15%)</span><span class="v" style="color:var(--red)">– RM 1.41</span></div>
+        <div class="bill"><span class="k">Tip from rider</span><span class="v" style="color:var(--acc-d)">+ RM 5.00</span></div>
+        <div class="bill tot"><span class="k">Net earnings</span><span class="v">RM 12.99</span></div>
+      </div>
+      <button class="btn acc mt14" data-go="home" data-toast="You're online for the next trip">Go online for next trip</button>
+      <button class="btn soft mt10" data-go="earnings">View earnings</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EARNINGS ============ -->
+<section class="screen" data-screen="earnings">
+  <div class="hdr" style="padding-bottom:6px"><div class="grow"><div class="h-title" style="font-size:24px">Earnings</div></div><button class="fab" style="box-shadow:none;border:1px solid var(--line)"><svg class="ic" style="width:20px;height:20px"><use href="#download"/></svg></button></div>
+  <div class="scroll pad" style="padding-top:8px;padding-bottom:20px">
+    <div class="card" style="background:linear-gradient(120deg,#0E1216,#14322a);border:none;padding:22px">
+      <div class="row between"><span style="color:rgba(255,255,255,.6)" class="f13 fw6">This week (Mon–Sun)</span><span class="st" style="background:rgba(255,255,255,.12);color:#fff">Payout Mon</span></div>
+      <div class="earnbig" style="color:#fff;margin-top:8px">RM 1,284.40</div>
+      <div class="row mt16" style="gap:10px"><button class="btn acc" style="height:46px" data-toast="Cashing out RM 1,284.40">Cash out now</button><button class="btn" style="height:46px;background:rgba(255,255,255,.12);color:#fff">History</button></div>
+    </div>
+    <div class="bars">
+      <div class="b"><i style="height:48%"></i><span>M</span></div><div class="b"><i style="height:66%"></i><span>T</span></div><div class="b"><i style="height:54%"></i><span>W</span></div><div class="b"><i style="height:78%"></i><span>T</span></div><div class="b on"><i style="height:100%"></i><span>F</span></div><div class="b"><i style="height:40%"></i><span>S</span></div><div class="b"><i style="height:30%"></i><span>S</span></div>
+    </div>
+    <div class="row mt16" style="gap:10px"><div class="stat"><div class="v">52</div><div class="l">Trips</div></div><div class="stat"><div class="v">RM 24.70</div><div class="l">Per trip</div></div><div class="stat"><div class="v">96%</div><div class="l">Acceptance</div></div></div>
+    <div class="f12 fw8 g2 cap" style="text-transform:uppercase;letter-spacing:.08em;margin:18px 0 4px">Breakdown</div>
+    <div class="card" style="padding:4px 16px">
+      <div class="lrow"><span class="li" style="color:var(--acc-d)"><svg class="ic" style="width:20px;height:20px"><use href="#car"/></svg></span><div class="grow"><div class="tt">Trip earnings</div><div class="ds">52 trips</div></div><span class="fw8 f14">RM 1,142.00</span></div>
+      <div class="lrow"><span class="li" style="color:var(--acc-d)"><svg class="ic" style="width:20px;height:20px"><use href="#bolt"/></svg></span><div class="grow"><div class="tt">Quests & bonuses</div><div class="ds">4 quests done</div></div><span class="fw8 f14" style="color:var(--acc-d)">+ RM 96.00</span></div>
+      <div class="lrow"><span class="li" style="color:var(--acc-d)"><svg class="ic" style="width:20px;height:20px"><use href="#gift"/></svg></span><div class="grow"><div class="tt">Tips</div><div class="ds">From 22 riders</div></div><span class="fw8 f14" style="color:var(--acc-d)">+ RM 118.50</span></div>
+      <div class="lrow"><span class="li" style="color:var(--red)"><svg class="ic" style="width:20px;height:20px"><use href="#percent"/></svg></span><div class="grow"><div class="tt">Commission</div><div class="ds">15% avg</div></div><span class="fw8 f14" style="color:var(--red)">– RM 172.10</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRIPS ============ -->
+<section class="screen" data-screen="trips">
+  <div class="hdr" style="padding-bottom:6px"><div class="grow"><div class="h-title" style="font-size:24px">Trips</div></div></div>
+  <div class="scroll pad" style="padding-top:8px;padding-bottom:20px">
+    <div class="row" style="gap:8px;margin:6px 0 14px"><button class="btn sm pri" data-seg>Today</button><button class="btn sm out" data-seg>Week</button><button class="btn sm out" data-seg>All</button></div>
+    <div class="card" style="padding:4px 16px">
+      <div class="lrow"><span class="li" style="color:var(--acc-d)"><svg class="ic" style="width:22px;height:16px"><use href="#pool"/></svg></span><div class="grow"><div class="tt">KLCC → Mid Valley</div><div class="ds">6:32 PM · Share · ★ 5.0</div></div><span class="fw8 f14">RM 14.49</span></div>
+      <div class="lrow"><span class="li"><svg class="ic" style="width:24px;height:16px"><use href="#car"/></svg></span><div class="grow"><div class="tt">Bangsar → KL Sentral</div><div class="ds">5:48 PM · Ride</div></div><span class="fw8 f14">RM 11.20</span></div>
+      <div class="lrow"><span class="li"><svg class="ic" style="width:24px;height:16px"><use href="#car"/></svg></span><div class="grow"><div class="tt">TRX → Mont Kiara</div><div class="ds">4:30 PM · Ride</div></div><span class="fw8 f14">RM 19.80</span></div>
+      <div class="lrow"><span class="li" style="color:var(--acc-d)"><svg class="ic" style="width:22px;height:16px"><use href="#pool"/></svg></span><div class="grow"><div class="tt">Sunway → Subang</div><div class="ds">3:10 PM · Share</div></div><span class="fw8 f14">RM 9.00</span></div>
+      <div class="lrow"><span class="li" style="color:var(--red)"><svg class="ic" style="width:24px;height:16px"><use href="#car"/></svg></span><div class="grow"><div class="tt">Ampang → KLCC</div><div class="ds">1:22 PM · Cancelled by rider</div></div><span class="fw8 f14" style="color:var(--acc-d)">+ RM 4.00</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ACCOUNT ============ -->
+<section class="screen" data-screen="account">
+  <div class="hdr" style="padding-bottom:6px"><div class="grow"><div class="h-title" style="font-size:24px">Account</div></div><button class="fab" style="box-shadow:none;border:1px solid var(--line)"><svg class="ic" style="width:20px;height:20px"><use href="#cog"/></svg></button></div>
+  <div class="scroll pad" style="padding-top:8px;padding-bottom:20px">
+    <div class="card row" style="gap:14px;align-items:center">
+      <span style="width:58px;height:58px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:20px;font-family:Sora">AF</span>
+      <div class="grow"><div class="fw8" style="font-size:17px">Ahmad Faizal</div><div class="row mt4" style="gap:6px"><span class="f12 fw7" style="color:var(--amber)">★ 4.92</span><span class="g2 f12">· Partner since 2024</span></div></div>
+      <span class="st ok">Verified</span>
+    </div>
+    <div class="row mt12" style="gap:10px"><div class="stat"><div class="v">1,284</div><div class="l">Trips</div></div><div class="stat"><div class="v">98%</div><div class="l">Completion</div></div><div class="stat"><div class="v">4.92</div><div class="l">Rating</div></div></div>
+
+    <div class="card mt12" style="border-color:var(--amber-50);background:var(--amber-50)">
+      <div class="row" style="gap:11px"><span style="width:40px;height:40px;border-radius:11px;background:#fff;display:grid;place-items:center;flex:0 0 auto"><svg class="ic" style="width:20px;height:20px;color:#946514"><use href="#clock"/></svg></span>
+        <div class="grow"><div class="f13 fw8" style="color:#946514">Road tax expires in 21 days</div><div class="f12" style="color:#946514;margin-top:2px">Renew to keep driving without interruption</div></div>
+        <button class="btn sm" style="background:#946514;color:#fff;border:none">Renew</button></div>
+    </div>
+
+    <div class="card mt12" style="padding:4px 16px">
+      <div class="lrow"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#car"/></svg></span><div class="grow"><div class="tt">My vehicle</div><div class="ds">Perodua Bezza · WXY 8821</div></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></div>
+      <div class="lrow"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#doc"/></svg></span><div class="grow"><div class="tt">Documents</div><div class="ds">Licence, Geran, insurance</div></div><span class="st warn">1 expiring</span></div>
+      <div class="lrow"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#bank"/></svg></span><div class="grow"><div class="tt">Payout account</div><div class="ds">Maybank •••• 2231</div></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></div>
+      <div class="lrow"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#star"/></svg></span><div class="grow"><div class="tt">Ratings & feedback</div><div class="ds">4.92 · "Friendly", "Clean car"</div></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></div>
+    </div>
+    <div class="card mt12" style="padding:4px 16px">
+      <div class="lrow"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#shield"/></svg></span><div class="grow"><div class="tt">Safety & insurance</div></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></div>
+      <div class="lrow"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#globe"/></svg></span><div class="grow"><div class="tt">Language</div><div class="ds">English</div></div><span class="f12 fw7 muted" style="margin-left:auto">EN · BM</span></div>
+      <div class="lrow"><span class="li"><svg class="ic" style="width:20px;height:20px"><use href="#help"/></svg></span><div class="grow"><div class="tt">Help centre</div></div><svg class="ic arr" style="width:18px;height:18px"><use href="#right"/></svg></div>
+      <button class="lrow" data-go="login" style="width:100%;text-align:left"><span class="li" style="color:var(--red)"><svg class="ic" style="width:20px;height:20px"><use href="#logout"/></svg></span><div class="grow"><div class="tt" style="color:var(--red)">Log out</div></div></button>
+    </div>
+    <div class="f12 g2" style="text-align:center;margin-top:18px">Ride Booking Driver · v3.2.1</div>
+  </div>
+</section>
+
+</div><!-- stage -->
+<div class="toast" id="toast">Saved</div>
+<nav class="tabbar">
+  <button class="tab on" data-go="home"><svg class="ic"><use href="#wheel"/></svg>Drive</button>
+  <button class="tab" data-go="earnings"><svg class="ic"><use href="#money"/></svg>Earnings</button>
+  <button class="tab" data-go="trips"><svg class="ic"><use href="#receipt"/></svg>Trips</button>
+  <button class="tab" data-go="account"><svg class="ic"><use href="#user"/></svg>Account</button>
+</nav>
+</div>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></symbol>
+<symbol id="wheel" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v6M4.2 18l5-3.3M19.8 18l-5-3.3"/></symbol>
+<symbol id="money" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2.5"/><circle cx="12" cy="12" r="3"/><path d="M5 9.5h.01M19 14.5h.01"/></symbol>
+<symbol id="receipt" viewBox="0 0 24 24"><path d="M5 3h14v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3ZM8.5 8h7M8.5 12h7M8.5 16h4"/></symbol>
+<symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3.3 3-5.5 7-5.5s7 2.2 7 5.5"/></symbol>
+<symbol id="people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c0-2.8 2.7-4.5 6-4.5s6 1.7 6 4.5M16 5.2a3.2 3.2 0 0 1 0 6.3M17.5 14.4c2 .5 3.5 1.8 3.5 4.4"/></symbol>
+<symbol id="bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6M9.5 21a2.5 2.5 0 0 0 5 0"/></symbol>
+<symbol id="left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="arr" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
+<symbol id="star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8L3.5 9.7l5.9-.9z"/></symbol>
+<symbol id="car" viewBox="0 0 32 24"><path d="M3 17v-3.5l2.2-5.2A2 2 0 0 1 7 7h10a2 2 0 0 1 1.8 1.1L21 13.5V17a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M3.5 13.5h17M8 17h0M16 17h0" stroke-width="2.2"/></symbol>
+<symbol id="pool" viewBox="0 0 24 24"><path d="M3 16v-3l1.6-3.8A1.6 1.6 0 0 1 6 8h7a1.6 1.6 0 0 1 1.4.9L16 13v3a.8.8 0 0 1-.8.8H3.8A.8.8 0 0 1 3 16Z"/><path d="M4 13h11" stroke-width="1.8"/><circle cx="18.5" cy="7.5" r="2.2"/><path d="M21.5 16c0-2-1.3-3-3-3"/></symbol>
+<symbol id="home2" viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5M5 9.5V20h5v-6h4v6h5V9.5"/></symbol>
+<symbol id="idcard" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5 16c.5-1.6 1.7-2.5 3-2.5s2.5.9 3 2.5M14 10h4M14 13.5h4"/></symbol>
+<symbol id="license" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5 16c.4-1.4 1.6-2.3 3-2.3s2.6.9 3 2.3M14 9h5M14 12h5M14 15h3"/></symbol>
+<symbol id="bank" viewBox="0 0 24 24"><path d="M3 10 12 4l9 6M4 10h16M5 10v8M9 10v8M15 10v8M19 10v8M3 20h18"/></symbol>
+<symbol id="doc" viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v4h4M9 12h6M9 16h6"/></symbol>
+<symbol id="shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 7.7 7 9 4-1.3 7-4.5 7-9V6l-7-3Z"/><path d="M9.5 12l1.8 1.8L15 10"/></symbol>
+<symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3M12 15v2"/></symbol>
+<symbol id="check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-9"/></symbol>
+<symbol id="cam" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+<symbol id="call" viewBox="0 0 24 24"><path d="M5 4h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5V19a2 2 0 0 1-2 2A16 16 0 0 1 4 6a2 2 0 0 1 1-2Z"/></symbol>
+<symbol id="chat" viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L4 20l1-4.3A8.5 8.5 0 1 1 21 11.5Z"/></symbol>
+<symbol id="nav" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-7-8-3Z"/></symbol>
+<symbol id="wallet" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 9h18M16.5 13.5h2"/></symbol>
+<symbol id="gift" viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 13h16M12 9v11M12 9C10 9 8 8 8 6.5S9.5 4 11 5s1 4 1 4 1-3 2.5-4 2.5 1.5 2.5 1.5S14 9 12 9Z"/></symbol>
+<symbol id="percent" viewBox="0 0 24 24"><path d="M19 5 5 19"/><circle cx="7.5" cy="7.5" r="1.6"/><circle cx="16.5" cy="16.5" r="1.6"/></symbol>
+<symbol id="download" viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 4 5-4M5 21h14"/></symbol>
+<symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3c-2.5 3-4 5.6-4 9s1.5 6 4 9M12 3c2.5 3 4 5.6 4 9s-1.5 6-4 9M3 12h18"/></symbol>
+<symbol id="cog" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a1.7 1.7 0 0 0 .3 1.9 2 2 0 1 1-2.3 3.1 1.7 1.7 0 0 0-2.9 1.2 2 2 0 1 1-4 0 1.7 1.7 0 0 0-2.9-1.2 2 2 0 1 1-2.3-3.1 1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 2 12a2 2 0 1 1 0-.1 1.7 1.7 0 0 0 1.6-1.4 1.7 1.7 0 0 0-.3-1.9A2 2 0 1 1 5.6 5.5 1.7 1.7 0 0 0 8.5 4.3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 2.9 1.2 2 2 0 1 1 2.3 3.1 1.7 1.7 0 0 0-.3 1.9A1.7 1.7 0 0 0 22 12a2 2 0 1 1 0 .1 1.7 1.7 0 0 0-1.6 1.4Z"/></symbol>
+<symbol id="logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 16l5-4-5-4M21 12H9"/></symbol>
+<symbol id="help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7M12 17h.01"/></symbol>
+<symbol id="google" viewBox="0 0 24 24"><path fill="#fff" stroke="none" d="M21.6 12.2c0-.6-.1-1.3-.2-1.9H12v3.6h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.2Z"/><path fill="#fff" stroke="none" opacity=".9" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 .9-3.4.9-2.6 0-4.8-1.7-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Z"/><path fill="#fff" stroke="none" opacity=".7" d="M6.4 13.9a6 6 0 0 1 0-3.8V7.5H3.1a10 10 0 0 0 0 9z"/><path fill="#fff" stroke="none" opacity=".85" d="M12 6.1c1.5 0 2.8.5 3.8 1.5l2.8-2.8A10 10 0 0 0 3.1 7.5l3.3 2.6C7.2 7.7 9.4 6.1 12 6.1Z"/></symbol>
+<symbol id="apple" viewBox="0 0 24 24"><path d="M12.15 6.9c-.95 0-2.42-1.08-3.96-1.04-2.04.03-3.91 1.18-4.96 3.01-2.12 3.68-.55 9.1 1.52 12.09 1.01 1.46 2.21 3.09 3.79 3.04 1.52-.07 2.09-.99 3.94-.99 1.83 0 2.35.99 3.96.95 1.64-.03 2.68-1.48 3.68-2.95 1.16-1.69 1.64-3.32 1.66-3.41-.04-.01-3.18-1.22-3.22-4.86-.03-3.04 2.48-4.49 2.6-4.56C19.7 7.9 17.5 7.66 16.73 7.61c-2-.16-3.68 1.09-4.58 1.09zM15.53 3.83c.84-1.01 1.4-2.43 1.25-3.83-1.21.05-2.66.81-3.53 1.82-.78.9-1.45 2.34-1.27 3.71 1.34.1 2.71-.69 3.55-1.7"/></symbol>
+</defs></svg>
+
+<script>
+function mapSVG(route){
+  const r = route ? `<path d="M70 690 C70 560 150 540 150 440 C150 340 300 360 300 250 L360 150" stroke="#0E1216" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><path d="M70 690 C70 560 150 540 150 440 C150 340 300 360 300 250 L360 150" stroke="#00B26B" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="2 14"/>` : '';
+  return `<svg class="mapsvg" viewBox="0 0 430 760" preserveAspectRatio="xMidYMid slice"><rect width="430" height="760" fill="#EAEDEA"/><g fill="#DDE3DD"><rect x="-20" y="120" width="180" height="150" rx="8"/><rect x="250" y="60" width="220" height="130" rx="8"/><rect x="20" y="470" width="150" height="170" rx="8"/><rect x="300" y="430" width="170" height="220" rx="8"/><rect x="190" y="300" width="120" height="120" rx="8"/></g><g fill="#CFE6D8"><rect x="180" y="100" width="80" height="80" rx="40"/></g><g stroke="#F4F6F4" stroke-width="14" fill="none" stroke-linecap="round"><path d="M-20 290 H460"/><path d="M-20 450 H460"/><path d="M175 -20 V780"/><path d="M330 -20 V780"/></g><g stroke="#FBFCFB" stroke-width="6" fill="none"><path d="M-20 200 H460"/><path d="M80 -20 V780"/><path d="M260 -20 V780"/></g>${r}</svg>`;
+}
+document.getElementById('map-home').innerHTML=mapSVG(false);
+['map-request','map-nav'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=mapSVG(true);});
+function addMarkers(id,o){const el=document.getElementById(id);if(!el)return;let h='';if(o.pickup)h+=`<div class="pin mk-pickup" style="left:16%;top:91%"><div class="head">Pickup</div><div class="stem"></div><div class="dot"></div></div>`;if(o.drop)h+=`<div class="pin mk-drop" style="left:84%;top:20%"><div class="head">Drop</div><div class="stem"></div><div class="dot"></div></div>`;if(o.car)h+=`<div class="carmk" style="left:35%;top:58%"><svg class="ic"><use href="#car"/></svg></div>`;el.insertAdjacentHTML('beforeend',h);}
+addMarkers('map-request',{pickup:1,drop:1,car:1});
+addMarkers('map-nav',{pickup:1,drop:1,car:1});
+
+const app=document.getElementById('app');
+const screens=[...document.querySelectorAll('.screen')];
+function go(id){const sc=screens.find(s=>s.dataset.screen===id);if(!sc)return;screens.forEach(s=>s.classList.toggle('active',s===sc));app.classList.toggle('flow',sc.hasAttribute('data-flow'));app.classList.toggle('dark',sc.hasAttribute('data-dark'));document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.go===id));const sb=sc.querySelector('.scroll,.sc');if(sb)sb.scrollTop=0;
+  if(id==='kyc-submitted'){
+    const bar=document.getElementById('kyc-bar');
+    if(bar){setTimeout(()=>{bar.style.width='100%';},50);}
+    setTimeout(()=>{
+      go('home');
+      const n=document.getElementById('kyc-notif');
+      if(n)n.style.display='block';
+    },2000);
+  }
+}
+let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2200);}
+
+// KYC: tap a card to complete it
+const kycDone={identity:false,license:false,vehicle:false,bank:false};
+const kycToast={identity:'Identity uploaded',license:'Licence uploaded',vehicle:'Vehicle details saved',bank:'Bank account saved'};
+function completeKyc(step){
+  if(kycDone[step.dataset.key])return;
+  kycDone[step.dataset.key]=true;
+  step.classList.add('done');
+  step.querySelector('.badge').innerHTML='<span class="chk"><svg class="ic" style="width:16px;height:16px;stroke-width:3"><use href="#check"/></svg></span>';
+  const n=Object.values(kycDone).filter(Boolean).length;
+  document.getElementById('kyc-count').textContent=n+' of 4 done';
+  document.getElementById('kyc-fill').style.width=(n/4*100)+'%';
+  document.getElementById('kyc-submit').disabled=n<4;
+  toast(kycToast[step.dataset.key]);
+}
+
+let online=false;
+function setOnline(v){online=v;const b=document.getElementById('gobtn');b.classList.toggle('offline',!v);document.getElementById('gobtn-txt').textContent=v?"You're online — tap to go offline":'Go online';document.getElementById('ind-online').style.display=v?'inline-flex':'none';document.getElementById('ind-offline').style.display=v?'none':'block';if(v){toast("You're online — searching for trips");setTimeout(()=>{if(online&&document.querySelector('[data-screen="home"]').classList.contains('active'))go('request');},1800);}}
+
+let navStep=0;const navSteps=[['Arrived at pickup','Picking up rider','Head to KLCC · 3 min'],['Start trip','Rider on board','Verify PIN then start'],['Complete trip','On trip to Mid Valley','12 min to destination']];
+function doNavStep(){const a=document.getElementById('nav-action');if(navStep>=navSteps.length-1){go('summary');navStep=0;a.textContent='Arrived at pickup';document.getElementById('nav-status').innerHTML='<span class="d"></span>Picking up rider';document.getElementById('nav-instruct').textContent='Head to KLCC · 3 min';return;}navStep++;const s=navSteps[navStep];a.textContent=s[0];document.getElementById('nav-status').innerHTML='<span class="d"></span>'+s[1];document.getElementById('nav-instruct').textContent=s[2];}
+
+document.addEventListener('click',e=>{
+  const kyc=e.target.closest('[data-kyc]');if(kyc){completeKyc(kyc);return;}
+  const nav=e.target.closest('[data-go]');if(nav){go(nav.dataset.go);}
+  const tg=e.target.closest('[data-toggle]');if(tg){tg.classList.toggle('on');}
+  const rng=e.target.closest('[data-rng]');if(rng){rng.closest('[data-range]').querySelectorAll('[data-rng]').forEach(r=>r.classList.remove('sel'));rng.classList.add('sel');}
+  if(e.target.closest('#gobtn')){setOnline(!online);}
+  if(e.target.closest('[data-nav-step]')){doNavStep();}
+  const seg=e.target.closest('[data-seg]');if(seg){seg.parentElement.querySelectorAll('[data-seg]').forEach(b=>{b.classList.remove('pri');b.classList.add('out');});seg.classList.remove('out');seg.classList.add('pri');}
+  const star=e.target.closest('[data-star]');if(star){const n=+star.dataset.star;star.closest('[data-stars]').querySelectorAll('[data-star]').forEach(s=>s.classList.toggle('on',+s.dataset.star<=n));}
+  const t=e.target.closest('[data-toast]');if(t){toast(t.dataset.toast);}
+});
+
+setInterval(()=>{const el=document.getElementById('ring-num');if(!el)return;const t=document.querySelector('[data-screen="request"]');if(!t.classList.contains('active')){el.textContent='12';return;}let n=+el.textContent;el.textContent=n>1?n-1:12;},1000);
+</script>
+</body>
+</html>
