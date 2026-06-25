@@ -512,8 +512,7 @@ input,textarea,select{font-family:inherit}
         <div class="grow"><div class="f13 fw7">KLCC → Mid Valley Megamall</div><div class="f12 muted mt4">14.2 km · 22 min</div></div>
         <div class="spx fw8" id="finding-fare">RM 13.50</div>
       </div>
-      <button class="btn out mt14" data-go="trip" style="border-color:var(--line)">Driver found — view trip</button>
-      <button class="btn soft mt10" data-go="home" style="color:var(--red)">Cancel request</button>
+      <button class="btn soft mt14" data-go="home" style="color:var(--red)">Cancel request</button>
     </div>
   </div>
 </section>
@@ -768,7 +767,7 @@ addMarkers('map-trip',{pickup:1,drop:1,car:1});
 
 const app=document.getElementById('app');
 const screens=[...document.querySelectorAll('.screen')];
-function go(id){const sc=screens.find(s=>s.dataset.screen===id);if(!sc)return;screens.forEach(s=>s.classList.toggle('active',s===sc));app.classList.toggle('flow',sc.hasAttribute('data-flow'));app.classList.toggle('dark',sc.hasAttribute('data-dark'));document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.go===id));const sb=sc.querySelector('.scroll,.sc');if(sb)sb.scrollTop=0;}
+function go(id){const sc=screens.find(s=>s.dataset.screen===id);if(!sc)return;screens.forEach(s=>s.classList.toggle('active',s===sc));app.classList.toggle('flow',sc.hasAttribute('data-flow'));app.classList.toggle('dark',sc.hasAttribute('data-dark'));document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.go===id));const sb=sc.querySelector('.scroll,.sc');if(sb)sb.scrollTop=0;if(id==='finding'){setTimeout(()=>{go('trip');},2200);}}
 let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2200);}
 
 // booking mode chosen on home: now | schedule | share
